@@ -3,7 +3,7 @@
 import * as THREE from "/vendor/three/three.module.js";
 import { GLTFLoader } from "/vendor/three/loaders/GLTFLoader.js";
 import { DRACOLoader } from "/vendor/three/loaders/DRACOLoader.js";
-import { G, view } from "./stage.js";
+import { G, view, setGround, placeInteriorLight } from "./stage.js";
 import { report } from "../core/errors.js";
 import { lerp } from "../core/utils.js";
 
@@ -17,12 +17,18 @@ const RIM_MATERIALS = ["RIM_CHROME", "ext_rim_metal"];
 const CALIPER_MATERIALS = ["CAR_PinzaFreni"];
 const TIRE_MATERIALS = ["TIRE"];
 const DISC_MATERIALS = ["CAR_DiscoFreni"];
+/* windows / glass: forced transparent so the real interior reads through them */
+const GLASS_MATERIALS = ["E34_M5_BLACK_GLASS", "WCWINDOW", "INTE_GLASS", "E34_BLACKBODY_TRANSL"];
+/* interior parts — kept classified for the cabin light + future options */
+const INTERIOR_PREFIX = "INT_";
+const GLOW_MATERIALS = ["gauge_emissive", "digital_gauge"];
 
 export const car = {
   root: null,           // normalized model root (child of G.spin)
-  mats: { paint: [], rim: [], caliper: [], tire: [], disc: [] },
+  mats: { paint: [], rim: [], caliper: [], tire: [], disc: [], glass: [], interior: [] },
   roofSkins: {},        // variantCode -> THREE.Mesh
   roofVariant: "fixed",
+  anchors: null,        // measured from the loaded model: front/rear/cabin/wheels
   loading: false,
   ready: false,
 };
@@ -79,9 +85,15 @@ export function loadCar(url, { onProgress, onDone, onError } = {}) {
       root.position.set(-center.x * scale, -center.y * scale - 0.35, -center.z * scale);
       root.scale.setScalar(scale);
       root.rotation.y = Math.PI;
+      // Bake the normalization into world matrices NOW: Box3.setFromObject() below
+      // only refreshes the object it is given, not its ancestors — without this the
+      // headlight measurement (and the dir it derives) would happen pre-rotation
+      // and come out mirrored vs. the rendered scene.
+      root.updateWorldMatrix(true, true);
 
-      car.mats = { paint: [], rim: [], caliper: [], tire: [], disc: [] };
+      car.mats = { paint: [], rim: [], caliper: [], tire: [], disc: [], glass: [], interior: [] };
       const seen = new Set();
+      const headlightBoxes = [];
       root.traverse((o) => {
         if (!o.isMesh) return;
         o.castShadow = true;
@@ -104,13 +116,65 @@ export function loadCar(url, { onProgress, onDone, onError } = {}) {
             car.mats.tire.push(m);
           } else if (DISC_MATERIALS.includes(nm)) {
             car.mats.disc.push(m);
+          } else if (GLASS_MATERIALS.includes(nm)) {
+            // transparent showroom glass — the cabin is visible from every angle
+            m.transparent = true;
+            m.opacity = nm === "INTE_GLASS" ? 0.22 : 0.42;
+            m.metalness = 0;
+            m.roughness = 0.06;
+            m.envMapIntensity = 1.8;
+            m.depthWrite = false;
+            m.needsUpdate = true;
+            car.mats.glass.push(m);
+          } else if (nm.startsWith(INTERIOR_PREFIX)) {
+            car.mats.interior.push(m);
+          } else if (GLOW_MATERIALS.includes(nm)) {
+            // instrument cluster glow for interior views
+            m.emissive = new THREE.Color(0xffb35c);
+            m.emissiveIntensity = 0.9;
+            m.needsUpdate = true;
           }
+          if (nm === "newheadlights") headlightBoxes.push(new THREE.Box3().setFromObject(o));
         }
       });
 
       car.root = root;
       car.root.userData.homeY = root.position.y;
+
+      /* Measure anchors from the real model. IMPORTANT: this car's LENGTH axis is Z
+         (headlights measure to z ≈ -2.1 → the nose points to -Z), so every
+         front/rear/dash/wheel anchor below is expressed along Z, and `dir` is the
+         sign of the nose along Z (−1 here). Cameras derive their orbit angle from it. */
+      const wbox = new THREE.Box3().setFromObject(root);
+      const wsize = wbox.getSize(new THREE.Vector3());
+      let frontCenterZ = 0;
+      if (headlightBoxes.length) {
+        for (const b of headlightBoxes) frontCenterZ += (b.min.z + b.max.z) / 2;
+        frontCenterZ /= headlightBoxes.length;
+      }
+      const dir = frontCenterZ >= 0 ? 1 : -1;
+      car.anchors = {
+        dir,                                  // nose sign along Z (−1 for this model)
+        halfLen: wsize.z / 2,
+        frontZ: dir * wsize.z * 0.46,         // just beyond the nose
+        rearZ: -dir * wsize.z * 0.48,         // just beyond the tail
+        dashZ: dir * wsize.z * 0.10,          // dashboard sits slightly ahead of centre
+        dashY: wbox.min.y + wsize.y * 0.50,
+        cabinZ: -dir * wsize.z * 0.05,        // cabin centre sits behind the dash
+        cabinY: wbox.min.y + wsize.y * 0.55,
+        seatZ: -dir * wsize.z * 0.14,
+        wheelY: wbox.min.y + wsize.y * 0.20,
+        wheelX: wsize.x * 0.46,               // half-track (wheels sit at ±X)
+        frontWheelZ: dir * wsize.z * 0.30,
+        rearWheelZ: -dir * wsize.z * 0.30,
+        roofY: wbox.max.y - 0.04,
+        bottomY: wbox.min.y,
+        size: wsize,
+      };
+
       G.spin.add(root);
+      setGround(wbox.min.y + 0.015);                          // floor follows the wheels
+      placeInteriorLight(0, car.anchors.dashY + 0.5, car.anchors.dashZ);
       car.ready = true;
       car.loading = false;
       onDone?.(root);

@@ -62,7 +62,49 @@ body.kiosk .kiosk-exit { display: block }
   z-index: 96; background: var(--card); border: 1px solid var(--warn); color: var(--fg2);
   border-radius: 999px; padding: 8px 18px; font: 600 11px/1 var(--mono); letter-spacing: .12em }
 
-/* admin console */
+/* ---------- showroom gallery ---------- */
+.gallery .gal { display: grid; grid-template-columns: 1.5fr 1fr; gap: 22px; align-items: stretch }
+.gal-stage { position: relative; min-height: 320px; border-radius: var(--r); border: 1px solid var(--line);
+  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--card) 40%, transparent)); }
+.gal-stage .hint { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
+  font: 500 10px/1 var(--mono); letter-spacing: .22em; text-transform: uppercase; color: var(--dim);
+  white-space: nowrap }
+[dir="rtl"] .gal-stage .hint { left: 50%; right: auto }
+.gal-dial { position: absolute; top: 14px; inset-inline-end: 14px; display: flex; align-items: center;
+  gap: 8px; background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+  padding: 6px 12px 6px 8px }
+.gal-dial svg { width: 26px; height: 26px }
+.gal-dial svg circle:first-child { fill: none; stroke: var(--line2); stroke-width: 2 }
+.gal-dial svg g { transform-origin: 32px 32px; transition: transform .12s linear }
+.gal-dial span { font: 700 12px/1 var(--mono); color: var(--fg2); min-width: 38px; text-align: end }
+.gal-panel { display: flex; flex-direction: column; gap: 14px; background: var(--card);
+  border: 1px solid var(--line); border-radius: var(--r); padding: 20px }
+.gal-views { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px }
+.gal-view { appearance: none; border: 1px solid var(--line); background: var(--card2); color: var(--fg2);
+  border-radius: 12px; padding: 12px 8px; cursor: pointer; display: flex; flex-direction: column;
+  align-items: center; gap: 7px; font: 600 11px/1 var(--mono); letter-spacing: .06em;
+  transition: border-color .2s, color .2s, transform .2s, box-shadow .25s }
+.gal-view i { display: grid; place-items: center; width: 24px; height: 24px }
+.gal-view svg { width: 22px; height: 22px }
+.gal-view:hover { transform: translateY(-2px); border-color: var(--accent); color: var(--fg) }
+.gal-view.on { border-color: var(--accent); color: var(--accent); box-shadow: var(--glow) }
+.gal-info { min-height: 96px; border-top: 1px solid var(--line); padding-top: 14px }
+.gal-info h4 { margin: 0 0 6px; font-size: 16px; letter-spacing: .01em }
+.gal-info p { margin: 0; font-size: 13.5px; line-height: 1.65; color: var(--muted) }
+.gal-idle { font: 500 12px/1.6 var(--mono); color: var(--dim) }
+.gal-spec { display: inline-block; margin-top: 10px; font: 600 10px/1 var(--mono); letter-spacing: .18em;
+  text-transform: uppercase; color: var(--accent); border: 1px solid var(--line2);
+  border-radius: 999px; padding: 6px 12px }
+.gal-ctrl { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto }
+.gal-ctrl .btn { padding: 11px 18px; font-size: 13px }
+.gal-ctrl #gal360.on { background: var(--accent); color: var(--accent-ink) }
+.gal-ctrl #galRotState { font-style: normal; margin-inline-start: 4px }
+@media (max-width: 980px) {
+  .gallery .gal { grid-template-columns: 1fr }
+  .gal-stage { min-height: 250px }
+}
+
+/* ---------- admin console ---------- */
 .admin-wrap { max-width: 1080px; margin: 0 auto; padding: 40px clamp(16px, 4vw, 40px) 90px }
 .admin-wrap h1 { font-size: clamp(26px, 4vw, 40px); margin: 0 0 6px; letter-spacing: -.01em }
 .admin-wrap .sub { color: var(--muted); margin: 0 0 26px; font-size: 14px }

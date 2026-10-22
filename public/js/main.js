@@ -9,7 +9,7 @@ import { applyHash, syncHash } from "./core/hash.js";
 import { applyLang, setLang } from "./core/i18n.js";
 import { installGlobalHandlers, report } from "./core/errors.js";
 import { refreshRates } from "./core/fx.js";
-import { initStage, hasWebGL, G, view, applyThemeToScene } from "./three/stage.js";
+import { initStage, hasWebGL, G, view, applyThemeToScene, step } from "./three/stage.js";
 import { loadCar, car, applyReveal, tickTransitions } from "./three/car.js";
 import { bindInput } from "./three/input.js";
 import { initChoreography, scrollLogic, startStaticFallback } from "./three/choreography.js";
@@ -25,6 +25,7 @@ import { bindGarage } from "./ui/garage.js";
 import { bindScreenshot } from "./ui/screenshot.js";
 import { bindKiosk } from "./ui/kiosk.js";
 import { bindNewsletter } from "./ui/newsletter.js";
+import { bindGallery, renderGallery, gallerySectionVisible } from "./ui/gallery.js";
 import { toast } from "./ui/toast.js";
 import { t } from "./core/i18n.js";
 
@@ -49,6 +50,7 @@ async function boot() {
     bindScreenshot();
     bindKiosk();
     bindNewsletter();
+    bindGallery();
     initOffline();
     registerSW();
     renderAll();
@@ -59,6 +61,8 @@ async function boot() {
 
     // language switch re-renders dynamic surfaces
     document.addEventListener("carx:rerender", () => { renderAll(); applyReveal(0); });
+    // turntable pauses when the gallery scrolls out of view
+    document.addEventListener("carx:galleryDominant", (e) => gallerySectionVisible(!!e.detail));
 
     // 3D
     const glOk = hasWebGL();
@@ -67,7 +71,7 @@ async function boot() {
         scrollLogic();
         tickTransitions(now);
       };
-      bindInput([document.getElementById("dragzone"), document.getElementById("cfgStage")]);
+      bindInput([document.getElementById("dragzone"), document.getElementById("cfgStage"), document.getElementById("galStage")]);
       loadCar(vehicle().glbPath || "/assets/models/bmw_m5_e34.glb", {
         onProgress: (p) => setAssetProgress(p),
         onDone: () => {
@@ -75,6 +79,8 @@ async function boot() {
           applyCfgLive();       // paint/rims/calipers/roof for saved cfg
           applyReveal(0);
           syncHash();
+          renderGallery();      // gallery views are measured from the real model
+          document.dispatchEvent(new CustomEvent("carx:carReady"));
         },
         onError: (e) => {
           report("car-load", e);
@@ -100,9 +106,24 @@ async function boot() {
       version: "2.0.0",
       get state() { return state; },
       get catalog() { return vehicle(); },
-      three: () => ({ ok: G.ready, scene: G.scene, cam: G.cam }),
+      three: () => ({ ok: G.ready, scene: G.scene, cam: G.cam, view }),
       car: () => car.root,
       errors: () => [],
+      /** Jump the camera to its targets instantly (testing aid — rAF may be suspended). */
+      snapView: () => {
+        view.ry = view.ryT + view.userYaw;
+        view.rx = view.rxT;
+        view.dist = view.distT;
+        view.fov = view.fovT;
+        view.camYOffset = view.camYOffsetT;
+        view.xT = view.xTT;
+        view.yT = view.yTT;
+        view.tx = view.txT;
+        view.ty = view.tyT;
+        view.tz = view.tzT;
+        view.light = view.lightT;
+        if (G.interiorLight) G.interiorLight.intensity = view.light;
+      },
       setCfg: (patch) => {
         for (const [kind, id] of Object.entries(patch)) {
           import("./ui/configurator.js").then((m) => m.selectOption(kind, id, { silent: true }));
@@ -112,6 +133,8 @@ async function boot() {
       /** Force one frame: applies pending material transitions + renders once (testing/occluded-window aid). */
       renderNow: () => {
         scrollLogic();
+        // rAF may be suspended (occluded window) — solve the camera explicitly
+        for (let i = 0; i < 30; i++) step(1 / 60);
         tickTransitions(performance.now());
         if (G.renderer && G.scene && G.cam) G.renderer.render(G.scene, G.cam);
       },

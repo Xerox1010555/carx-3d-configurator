@@ -1,6 +1,6 @@
 /* CARX ATELIER — service worker: offline-first shell, cache-first immutable assets. */
 
-const VERSION = "carx-v2";
+const VERSION = "carx-v3";
 const SHELL_CACHE = VERSION + "-shell";
 const ASSET_CACHE = VERSION + "-assets";
 const API_CACHE = VERSION + "-api";
@@ -14,8 +14,10 @@ const SHELL = [
   "/js/core/fx.js", "/js/core/hash.js", "/js/core/errors.js", "/js/core/catalog.js",
   "/js/api/client.js", "/js/analytics.js",
   "/js/three/stage.js", "/js/three/car.js", "/js/three/input.js", "/js/three/choreography.js",
+  "/js/three/showroom.js",
   "/js/ui/chrome.js", "/js/ui/configurator.js", "/js/ui/cart.js", "/js/ui/garage.js",
   "/js/ui/screenshot.js", "/js/ui/kiosk.js", "/js/ui/newsletter.js", "/js/ui/toast.js",
+  "/js/ui/gallery.js",
   "/vendor/three/three.module.js",
   "/vendor/three/three.core.js",
   "/manifest.webmanifest",
