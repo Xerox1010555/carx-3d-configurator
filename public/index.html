@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' blob:; worker-src 'self' blob:; base-uri 'self'; form-action 'self'; object-src 'none'">
+<title>CARX ATELIER — BMW M5 E34 Studio</title>
+<meta name="description" content="CARX ATELIER — interactive 3D studio for the BMW M5 E34. Configure paint, wheels, roof and trim on a real GLB model, share your build and save it to your garage.">
+<meta name="robots" content="index,follow">
+<meta name="theme-color" content="#060809">
+<link rel="canonical" href="/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="CARX ATELIER">
+<meta property="og:title" content="CARX ATELIER — BMW M5 E34 Studio">
+<meta property="og:description" content="Interactive 3D studio for the BMW M5 E34. Configure paint, wheels and trim on a real model, share your build.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="CARX ATELIER — BMW M5 E34 Studio">
+<meta name="color-scheme" content="dark light">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b0d10'/%3E%3Cpath d='M20 22h22l6 8v12h-4a6 6 0 1 1-12 0h-8a6 6 0 1 1-12 0h-4V30z' fill='none' stroke='%23d4a853' stroke-width='3'/%3E%3C/svg%3E">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="stylesheet" href="/css/studio.css">
+<link rel="stylesheet" href="/css/features.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "BMW M5 E34 Touring — CARX ATELIER build",
+  "brand": { "@type": "Brand", "name": "BMW" },
+  "description": "Interactive 3D configurator build of the BMW M5 E34. All prices are demonstrative fiction.",
+  "offers": { "@type": "Offer", "priceCurrency": "USD", "price": "98000", "availability": "https://schema.org/DemoMode" }
+}
+</script>
+</head>
+<body>
+<a class="sr" href="#main" data-ix="skip">Skip to content</a>
+
+<canvas id="gl" aria-hidden="true"></canvas>
+<div class="stage-vig" aria-hidden="true"></div>
+<div class="cur" aria-hidden="true"></div>
+<div class="cur-ring" aria-hidden="true"></div>
+
+<header class="nav" id="nav">
+  <a class="nav-brand" href="#hero">CAR<b>X</b> <small>ATELIER</small></a>
+  <nav class="nav-links" aria-label="Sections">
+    <a href="#collection" data-ix="n1">Collection</a>
+    <a href="#configurator" data-ix="n2">Configurator</a>
+    <a href="#engineering" data-ix="n3">Engineering</a>
+    <a href="#showrooms" data-ix="n4">Showrooms</a>
+  </nav>
+  <div class="nav-sp"></div>
+  <div class="nav-act">
+    <select class="cur-sel" id="curSel" aria-label="Currency">
+      <option>USD</option><option>EGP</option><option>AED</option><option>SAR</option>
+    </select>
+    <button class="icobtn" id="garageBtn" aria-label="My garage" title="Garage">
+      <svg viewBox="0 0 24 24"><path d="M4 10l8-6 8 6v9a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg>
+    </button>
+    <button class="icobtn" id="shotBtn" aria-label="Export screenshot" title="Screenshot">
+      <svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2.5"/><circle cx="12" cy="13.5" r="3.4"/><path d="M8.5 7l1.4-2.4h4.2L15.5 7"/></svg>
+    </button>
+    <button class="icobtn cart-b" id="cartBtn" aria-label="Cart">
+      <svg viewBox="0 0 24 24"><path d="M4 5h2l2.2 10.2a1.8 1.8 0 0 0 1.8 1.4h7.4a1.8 1.8 0 0 0 1.8-1.4L20.5 8H7"/><circle cx="10" cy="20" r="1.3"/><circle cx="17" cy="20" r="1.3"/></svg>
+      <span class="cart-badge" id="cartBadge">0</span>
+    </button>
+    <button class="icobtn" id="themeBtn" aria-label="Theme">
+      <svg viewBox="0 0 24 24"><path d="M20 14.5A8.3 8.3 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5z"/></svg>
+    </button>
+    <select class="cur-sel" id="langSel" aria-label="Language" style="width:auto;padding:0 10px">
+      <option value="en">EN</option><option value="ar">AR</option>
+    </select>
+    <button class="icobtn burger" id="burger" aria-label="Menu">
+      <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+  </div>
+</header>
+
+<div class="menu" id="menu" hidden>
+  <a href="#collection" data-ix="n1">Collection</a>
+  <a href="#configurator" data-ix="n2">Configurator</a>
+  <a href="#story" data-ix="n5">Build story</a>
+  <a href="#engineering" data-ix="n3">Engineering</a>
+  <a href="#showrooms" data-ix="n4">Showrooms</a>
+  <div class="menu-foot">
+    <button class="btn btn-ghost" id="menuTheme">Theme</button>
+    <button class="btn btn-ghost" id="menuLang">العربية</button>
+    <button class="btn btn-ghost" id="menuKiosk" data-ix="kioskOn">Kiosk mode</button>
+  </div>
+</div>
+
+<main id="main">
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <div class="hero-copy">
+      <p class="hero-code">M-Power Atelier · E34 · 1992—1995</p>
+      <h1 class="hero-title" id="heroTitle">
+        <span class="t-line"><span class="t-in" data-ix="heroT1">BMW</span></span>
+        <span class="t-line"><span class="t-in" data-ix="heroT2">M5</span></span>
+        <span class="t-line"><span class="t-in" style="color:var(--accent)" data-ix="heroT3">E34.</span></span>
+      </h1>
+      <p class="hero-sub" data-ix="heroSub">The legendary BMW M5 E34 — S38 3.8 L inline-six, 315 PS, 250 km/h. Configure paint, wheels, roof and trim on a real GLB model, in your browser.</p>
+      <div class="hero-stats rv rv-d2">
+        <div><b>S38</b><span data-ix="stat1">3.8 L I6</span></div>
+        <div><b>315</b><span data-ix="stat2">PS</span></div>
+        <div><b>250</b><span>km/h</span></div>
+      </div>
+      <div class="cta-row">
+        <button class="btn btn-p" data-goto="configurator" data-ix="ctaCfg">Open configurator</button>
+        <button class="btn btn-ghost" data-scrollto="story" data-ix="ctaStory">The build, layer by layer</button>
+      </div>
+    </div>
+    <div class="dragzone" id="dragzone" aria-hidden="true"><div class="grab-dot"></div></div>
+    <div class="hero-hint"><span class="grab-dot"></span><span data-ix="drag">drag to rotate</span></div>
+    <div class="fb-car" id="fbCar" hidden aria-hidden="true">
+      <div class="fb-body"></div><div class="fb-glass"></div>
+      <div class="fb-w fb-w1"></div><div class="fb-w fb-w2"></div>
+    </div>
+  </section>
+
+  <!-- STORY -->
+  <section class="story" id="story">
+    <div class="story-pin">
+      <div class="story-copy">
+        <article class="story-step" data-step="0">
+          <b>01 / The Model</b>
+          <h3 data-ix="st1t">A real car, in your browser.</h3>
+          <p data-ix="st1p">The E34 M5 loads as a true Draco-compressed GLB — 4.5 MB of real geometry, materials and textures — streamed straight into the studio viewport.</p>
+        </article>
+        <article class="story-step" data-step="1" hidden>
+          <b>02 / Light</b>
+          <h3 data-ix="st2t">Studio light on real surfaces.</h3>
+          <p data-ix="st2p">A PMREM environment, key/rim/fill lights and a contact shadow read the loaded model as a physical object, not a screenshot.</p>
+        </article>
+        <article class="story-step" data-step="2" hidden>
+          <b>03 / Finish</b>
+          <h3 data-ix="st3t">Paint that follows your choice.</h3>
+          <p data-ix="st3p">Selections tint the model's real paint material (E34_CAR_PAINT) live — rims, brake calipers and the roof skin change with the wheel, trim and roof you pick.</p>
+        </article>
+        <article class="story-step" data-step="3" hidden>
+          <b>04 / Reveal</b>
+          <h3 data-ix="st4t">A signature in one stroke.</h3>
+          <p data-ix="st4p">Scroll lifts the car into the story with callouts and parallax — the same engine, the same real model, from hero to newsletter.</p>
+        </article>
+      </div>
+      <aside class="co" data-co="0" style="left:56%;top:20%"><b>S38</b><span data-ix="co0">Hand-assembled 3.8 L inline-six, 315 PS at 6?900 rpm.</span></aside>
+      <aside class="co" data-co="1" style="left:60%;top:66%"><b>Getrag</b><span data-ix="co1">Dog-leg five-speed, built for the autobahn, not the spreadsheet.</span></aside>
+      <aside class="co" data-co="2" style="left:70%;top:24%"><b>M Parallel</b><span data-ix="co2">Forged 17&#8243; wheels — three finishes, live on the model.</span></aside>
+      <aside class="co" data-co="3" style="left:26%;top:64%"><b>Touring</b><span data-ix="co3">The wagon nobody ordered new — and everybody wants now.</span></aside>
+      <div class="rail" id="rail" aria-hidden="true">
+        <i class="rail-dot on"></i><i class="rail-dot"></i><i class="rail-dot"></i><i class="rail-dot"></i>
+      </div>
+    </div>
+  </section>
+
+  <!-- COLLECTION -->
+  <section class="sec" id="collection">
+    <p class="kicker rv" data-ix="colK">The Garage</p>
+    <h2 class="sec-title rv" data-ix="colT">The legend. One philosophy.</h2>
+    <p class="sec-sub rv rv-d1" data-ix="colS">A single real-world model — the BMW M5 E34 Touring — loaded as a true GLB. Every choice repaints it live; every build gets a shareable key.</p>
+    <div class="c-grid" id="carGrid"></div>
+  </section>
+
+  <!-- CONFIGURATOR -->
+  <section class="sec" id="configurator">
+    <p class="kicker rv" data-ix="cfgK">Configurator</p>
+    <h2 class="sec-title rv" data-ix="cfgT">Make it unmistakably yours.</h2>
+    <p class="sec-sub rv rv-d1" data-ix="cfgS">Paint tints the real body material, wheels re-finish the rims, trims recolour the brake calipers and the roof grows a carbon or panorama skin. Prices are fictional.</p>
+    <div class="cfg">
+      <div class="cfg-stage rv" id="cfgStage">
+        <p class="hint" data-ix="cfgHint">drag on the canvas edge &middot; pinch to zoom</p>
+        <div class="fb-stage" id="cfgFallback" hidden><div class="carline"></div></div>
+      </div>
+      <div class="cfg-panel rv rv-d1" id="cfgPanel"></div>
+    </div>
+    <div class="cfg-groups rv" id="cfgGroups" style="margin-top:34px"></div>
+  </section>
+
+  <!-- PERFORMANCE -->
+  <section class="sec perf" id="performance">
+    <p class="kicker rv" data-ix="perfK">Telemetry</p>
+    <h2 class="sec-title rv" data-ix="perfT">Numbers, honestly rounded.</h2>
+    <div class="perf-grid" id="perfGrid"></div>
+  </section>
+
+  <!-- ENGINEERING -->
+  <section class="sec" id="engineering">
+    <p class="kicker rv" data-ix="engK">Engineering</p>
+    <h2 class="sec-title rv" data-ix="engT">Four chapters of the build.</h2>
+    <div class="rv">
+      <div class="eng-row"><span class="n">CH·1</span><div><h3 data-ix="e1t">Compressed reality</h3><p data-ix="e1p">The 27 MB source GLB is Draco-compressed and its 49 textures re-encoded to WebP — 4.5 MB on the wire, loaded once with real progress reporting.</p></div></div>
+      <div class="eng-row"><span class="n">CH·2</span><div><h3 data-ix="e2t">Studio lighting</h3><p data-ix="e2p">PMREM environment, key/rim/fill directional lights, hemisphere, contact shadow and drifting dust — all relit when you switch the theme.</p></div></div>
+      <div class="eng-row"><span class="n">CH·3</span><div><h3 data-ix="e3t">Live materials</h3><p data-ix="e3p">Paint, rims and calipers are mapped to the model's real material slots (E34_CAR_PAINT, RIM_CHROME, CAR_PinzaFreni) and transition with a colour lerp — no model reloads.</p></div></div>
+      <div class="eng-row"><span class="n">CH·4</span><div><h3 data-ix="e4t">Procedural roof skin</h3><p data-ix="e4p">The carbon and panorama roofs are generated at runtime: the roof surface is raycast from above and re-skinned with a procedural carbon weave or dark glass — a real change on the real model.</p></div></div>
+    </div>
+  </section>
+
+  <!-- SHOWROOMS -->
+  <section class="sec" id="showrooms">
+    <p class="kicker rv" data-ix="shK">Showrooms</p>
+    <h2 class="sec-title rv" data-ix="shT">Visit the imaginary network.</h2>
+    <p class="sec-sub rv rv-d1" data-ix="shS">These ateliers do not exist — which keeps them immaculate.</p>
+    <div class="sh-grid" id="showGrid"></div>
+  </section>
+
+  <!-- NEWSLETTER -->
+  <section class="sec" id="newsletter">
+    <div class="nl">
+      <p class="kicker rv" data-ix="nlK">Dispatch</p>
+      <h2 class="sec-title rv" data-ix="nlT">Letters from the wind tunnel.</h2>
+      <p class="sec-sub rv rv-d1" data-ix="nlS">One e-mail per fictional quarter. Unsubscribe with one click — the token is real, the letters are not.</p>
+      <form class="nl-row rv rv-d2" id="nlForm">
+        <input type="email" id="nlMail" data-ix-ph="nlPh" placeholder="you@studio.example" autocomplete="email" required>
+        <button class="btn btn-p" type="submit" data-ix="nlGo">Join</button>
+      </form>
+      <p class="nl-note" id="nlNote"></p>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="foot-in">
+    <div class="brandline">
+      <b>BMW<em> M5</em> E34</b>
+      <p data-ix="footA">Atelier demo. Your build lives in this browser and — if you check out — in the studio's order book.</p>
+    </div>
+    <div><h5 data-ix="footStudio">Studio</h5><a href="#collection" data-ix="n1">Collection</a><a href="#configurator" data-ix="n2">Configurator</a><a href="#engineering" data-ix="n3">Engineering</a></div>
+    <div><h5 data-ix="footMore">More</h5><a href="#performance" data-ix="n6">Telemetry</a><a href="#showrooms" data-ix="n4">Showrooms</a><a href="#story" data-ix="n5">Build story</a></div>
+    <div><h5 data-ix="footLegal">Legal</h5><a href="#" data-ix="fPrivacy">Privacy (privacy-light)</a><a href="#" data-ix="fTerms">Terms (fictional)</a><a href="/admin" data-ix="fAdmin">Admin</a></div>
+  </div>
+  <div class="legal">
+    <span>© 2026 CARX ATELIER — demonstrative fiction</span>
+    <span class="disc" data-ix="fDisc">The BMW M5 E34 model is loaded from a compressed GLB file. All prices and configurations are demonstrative fiction. No real vehicles are sold.</span>
+  </div>
+</footer>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" aria-label="Cart" hidden></aside>
+<div class="modal" id="modal" hidden></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<div class="pl" id="pl">
+  <div class="pl-brand">CAR<b>X</b></div>
+  <div class="pl-bar"><i id="plBar"></i></div>
+  <div class="pl-num" id="plNum">0%</div>
+  <div class="pl-cap" data-ix="plCap">Entering the studio</div>
+</div>
+
+<script type="module" src="/js/main.js"></script>
+</body>
+</html>

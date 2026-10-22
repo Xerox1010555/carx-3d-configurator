@@ -1,0 +1,1971 @@
+﻿<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' blob: https://open.er-api.com; base-uri 'self'; form-action 'self'; object-src 'none'; worker-src 'none'">
+<title>CARX ATELIER — BMW M5 E34 Studio</title>
+<meta name="description" content="CARX ATELIER — interactive 3D studio for the BMW M5 E34. Configure paint, wheels, roof and trim, share your build and simulate an order.">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://carx-atelier.example/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="CARX ATELIER">
+<meta property="og:title" content="CARX ATELIER — BMW M5 E34 Studio">
+<meta property="og:description" content="Interactive 3D studio for the BMW M5 E34. Configure paint, wheels and trim, share your build.">
+<meta property="og:url" content="https://carx-atelier.example/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="CARX ATELIER — BMW M5 E34 Studio">
+<meta name="twitter:description" content="Interactive 3D studio for the BMW M5 E34. Configure paint, wheels and trim, share your build.">
+<meta name="color-scheme" content="dark light">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b0d10'/%3E%3Cpath d='M20 22h22l6 8v12h-4a6 6 0 1 1-12 0h-8a6 6 0 1 1-12 0h-4V30z' fill='none' stroke='%2382b1ff' stroke-width='3'/%3E%3C/svg%3E">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "CARX ATELIER — BMW M5 E34",
+  "url": "https://carx-atelier.example/",
+  "description": "Interactive 3D studio for the BMW M5 E34. Configure paint, wheels and trim, share your build.",
+  "slogan": "The legend, in 3D."
+}
+</script>
+<style>
+/* ============ tokens ============ */
+:root{
+  --sans:"Inter","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --bg:#060809; --bg2:#0a0c0f; --card:#111418; --card2:#161a20;
+  --line:rgba(255,255,255,.06); --line2:rgba(255,255,255,.12);
+  --fg:#f0f2f5; --fg2:#c8cdd6; --muted:#8a93a0; --dim:#5a6270;
+  --accent:#d4a853; --accent2:#e8c97a; --accent-ink:#0a0c0f;
+  --ok:#69d58c; --warn:#ffb85c; --err:#ff8080;
+  --glow:0 0 28px rgba(212,168,83,.35);
+  --shadow:0 32px 80px rgba(0,0,0,.65);
+  --r:16px; --r2:22px; --maxw:1180px; --nav-h:64px;
+  --sec-pad:clamp(64px,9vw,120px);
+}
+[data-theme="light"]{
+  --bg:#f5f3f0; --bg2:#faf9f7; --card:#ffffff; --card2:#f2f0ec;
+  --line:rgba(10,14,20,.08); --line2:rgba(10,14,20,.14);
+  --fg:#1a1610; --fg2:#3a3228; --muted:#6b6255; --dim:#9a9080;
+  --accent:#b8892e; --accent2:#d4a853; --accent-ink:#ffffff;
+  --glow:0 0 22px rgba(184,137,46,.2);
+  --shadow:0 24px 70px rgba(26,22,16,.12);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:auto}
+body{
+  margin:0;background:var(--bg);color:var(--fg);
+  font:16px/1.62 var(--sans);
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  overflow-x:clip;
+}
+img,svg,canvas{display:block;max-width:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:inherit;text-decoration:none}
+::selection{background:var(--accent);color:var(--accent-ink)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+.sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+[hidden]{display:none !important}
+
+/* canvas stage */
+#gl{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.stage-vig{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(ellipse 80% 70% at 50% 45%,transparent 30%,rgba(0,0,0,.55) 100%)}
+[data-theme="light"] .stage-vig{background:radial-gradient(120% 90% at 50% 42%,transparent 45%,rgba(20,32,60,.10) 100%)}
+main,header,footer{position:relative;z-index:2}
+
+/* ============ cursor ============ */
+.cur,.cur-ring{position:fixed;left:0;top:0;z-index:120;pointer-events:none;border-radius:50%;
+  transform:translate(-50%,-50%);opacity:0;transition:opacity .3s}
+.cur{width:7px;height:7px;background:var(--accent)}
+.cur-ring{width:34px;height:34px;border:1px solid var(--line2);transition:opacity .3s,width .18s,height .18s}
+body.has-cursor .cur,body.has-cursor .cur-ring{opacity:1}
+body.cur-hot .cur-ring{width:52px;height:52px;border-color:var(--accent)}
+@media (pointer:coarse){.cur,.cur-ring{display:none}}
+
+/* ============ preloader ============ */
+.pl{position:fixed;inset:0;z-index:200;background:var(--bg);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:20px;transition:opacity .7s ease,visibility .7s}
+.pl-out{opacity:0;visibility:hidden;pointer-events:none}
+.pl-brand{font-size:clamp(38px,7vw,72px);font-weight:700;letter-spacing:.34em;text-indent:.34em;color:var(--fg)}
+.pl-brand b{color:var(--accent);font-weight:700}
+.pl-num{font:600 13px/1 var(--mono);color:var(--muted);letter-spacing:.2em}
+.pl-bar{width:min(320px,62vw);height:2px;background:var(--line);border-radius:2px;overflow:hidden}
+.pl-bar i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px}
+.pl-cap{font:500 10px/1 var(--mono);letter-spacing:.42em;text-transform:uppercase;color:var(--dim)}
+
+/* ============ nav ============ */
+.nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);z-index:90;display:flex;align-items:center;
+  gap:26px;padding:0 clamp(16px,4vw,44px);
+  background:color-mix(in srgb,var(--bg) 72%,transparent);
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  border-bottom:1px solid transparent;transition:border-color .3s,background .3s}
+.nav.solid{border-color:var(--line);background:color-mix(in srgb,var(--bg) 86%,transparent)}
+.nav-brand{display:flex;align-items:baseline;gap:9px;font-weight:800;letter-spacing:.18em;text-indent:.18em}
+.nav-brand b{color:var(--accent)}
+.nav-brand small{font:600 10px/1 var(--mono);color:var(--dim);letter-spacing:.3em}
+.nav-links{display:flex;gap:4px;margin-inline-start:8px}
+.nav-links a{padding:8px 13px;border-radius:999px;font-size:13.5px;color:var(--muted);
+  text-decoration:none;transition:color .2s,background .2s}
+.nav-links a:hover{color:var(--fg);background:var(--line)}
+.nav-links a.on{color:var(--fg)}
+.nav-sp{flex:1}
+.nav-act{display:flex;align-items:center;gap:8px}
+.icobtn{width:38px;height:38px;border-radius:11px;border:1px solid var(--line);background:transparent;
+  display:grid;place-items:center;cursor:pointer;color:var(--fg2);transition:border-color .2s,background .2s}
+.icobtn:hover{border-color:var(--line2);background:var(--line)}
+.icobtn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.lang-b{width:auto;padding:0 12px;gap:6px;font:600 11px/1 var(--mono);letter-spacing:.14em}
+.cart-b{position:relative}
+.cart-badge{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;padding:0 5px;border-radius:999px;
+  background:var(--accent);color:var(--accent-ink);font:700 10.5px/18px var(--mono);text-align:center;
+  transform:scale(0);transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+.cart-badge.on{transform:scale(1)}
+.cur-sel{height:38px;border-radius:11px;border:1px solid var(--line);background:transparent;color:var(--fg2);
+  padding:0 8px;font:600 11px/1 var(--mono);letter-spacing:.08em;cursor:pointer}
+.cur-sel option{background:var(--card);color:var(--fg)}
+.burger{display:none}
+.menu{position:fixed;inset:0;z-index:110;background:color-mix(in srgb,var(--bg) 92%,transparent);
+  -webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);display:flex;flex-direction:column;
+  padding:26px clamp(20px,6vw,44px);gap:6px;opacity:0;visibility:hidden;transition:opacity .3s,visibility .3s}
+.menu.open{opacity:1;visibility:visible}
+.menu a{font-size:clamp(26px,5.5vw,40px);font-weight:700;text-decoration:none;color:var(--fg2);
+  padding:10px 0;border-bottom:1px solid var(--line);transition:color .2s,transform .25s}
+.menu a:active{color:var(--accent);transform:translateX(8px)}
+.menu-foot{margin-top:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+/* ============ hero ============ */
+.hero{min-height:100vh;min-height:100svh;display:flex;align-items:center;padding:calc(var(--nav-h) + 4vh) clamp(20px,6vw,72px) 10vh;position:relative}
+.hero-copy{max-width:640px}
+.hero-code{font:600 12px/1 var(--mono);letter-spacing:.42em;color:var(--accent);text-transform:uppercase}
+.hero-title{margin:16px 0 18px;font-size:clamp(52px,9.2vw,118px);line-height:.96;font-weight:800;
+  letter-spacing:-.015em;text-transform:uppercase}
+.hero-title .t-line{display:block;overflow:hidden}
+.hero-title .t-in{display:inline-block;transform:translateY(112%);transition:transform 1s cubic-bezier(.19,1,.22,1)}
+.hero-title.revealed .t-in{transform:translateY(0)}
+.hero-sub{color:var(--muted);font-size:clamp(15px,1.6vw,18px);max-width:46ch;margin:0 0 30px}
+.hero-stats{display:flex;gap:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;width:max-content;max-width:100%;margin-bottom:34px}
+.hero-stats>div{padding:13px 22px;border-end-end-radius:0;border-start-start-radius:0}
+.hero-stats>div+div{border-inline-start:1px solid var(--line)}
+.hero-stats b{display:block;font:700 19px/1.2 var(--mono);color:var(--fg)}
+.hero-stats span{font:500 10px/1 var(--mono);letter-spacing:.3em;color:var(--dim);text-transform:uppercase}
+.cta-row{display:flex;gap:12px;flex-wrap:wrap}
+.btn{appearance:none;border:1px solid var(--line2);background:var(--card);color:var(--fg);
+  padding:14px 26px;border-radius:999px;font-weight:600;font-size:14.5px;cursor:pointer;
+  transition:transform .2s,border-color .2s,background .2s,box-shadow .25s;-webkit-tap-highlight-color:transparent}
+.btn:hover{transform:translateY(-2px);border-color:var(--accent);box-shadow:var(--glow)}
+.btn:active{transform:translateY(0)}
+.btn-p{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn-p:hover{box-shadow:0 10px 34px color-mix(in srgb,var(--accent) 45%,transparent)}
+.btn-ghost{background:transparent;border-color:var(--line)}
+.dragzone{position:absolute;inset:30vh 0 0 55%;z-index:3;cursor:grab;touch-action:none}
+.dragzone:active{cursor:grabbing}
+.dragzone.grab .grab-dot{animation:pulse 1.4s ease infinite}
+@keyframes pulse{50%{opacity:.4;transform:scale(.82)}}
+.hero-hint{position:absolute;right:clamp(24px,5vw,66px);bottom:5vh;display:flex;align-items:center;gap:10px;
+  font:500 10.5px/1 var(--mono);letter-spacing:.32em;text-transform:uppercase;color:var(--dim);z-index:3}
+.grab-dot{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--accent)}
+.fb-car{position:absolute;left:52%;top:56%;width:min(52vw,560px);transform:translate(-50%,-50%);z-index:1;opacity:.9}
+.fb-car .fb-body{height:120px;background:var(--accent);opacity:.5;border-radius:60px 70px 24px 24px/70px 96px 30px 30px;
+  -webkit-mask:linear-gradient(#000 0 0) 0 0/100% 100%;position:relative}
+.fb-car .fb-glass{position:absolute;left:38%;top:-44px;width:34%;height:60px;background:var(--line2);
+  border-radius:40px 70px 6px 30px/60px 90px 10px 40px;opacity:.75}
+.fb-car .fb-w{position:absolute;bottom:-26px;width:64px;height:64px;border-radius:50%;background:var(--bg2);
+  border:9px solid var(--dim)}
+.fb-car .fb-w1{left:12%}.fb-car .fb-w2{right:14%}
+
+/* ============ sections shell ============ */
+.sec{padding:var(--sec-pad) clamp(20px,6vw,72px);max-width:var(--maxw);margin-inline:auto}
+.kicker{font:600 11px/1 var(--mono);letter-spacing:.4em;text-transform:uppercase;color:var(--accent);margin:0 0 14px}
+.sec-title{margin:0 0 14px;font-size:clamp(30px,4.6vw,54px);line-height:1.06;font-weight:800;letter-spacing:-.01em}
+.sec-sub{color:var(--muted);max-width:560px;margin:0 0 40px;font-size:15.5px}
+.rv{opacity:0;transform:translateY(26px);transition:opacity .8s ease,transform .8s cubic-bezier(.19,1,.22,1)}
+.rv.in{opacity:1;transform:none}
+.rv-d1{transition-delay:.08s}.rv-d2{transition-delay:.16s}.rv-d3{transition-delay:.24s}
+
+/* ============ story ============ */
+.story{position:relative;height:520vh}
+.story-pin{position:sticky;top:0;height:100vh;height:100svh;display:flex;align-items:center;overflow:clip}
+.story-copy{position:absolute;left:clamp(20px,6vw,72px);top:22vh;max-width:430px;z-index:2;pointer-events:none}
+.story-step b{display:block;font:700 12px/1 var(--mono);letter-spacing:.34em;color:var(--accent);margin-bottom:12px}
+.story-step h3{margin:0 0 10px;font-size:clamp(24px,3vw,34px);line-height:1.12;font-weight:800}
+.story-step p{margin:0;color:var(--muted);font-size:14.5px;max-width:380px}
+.co{position:absolute;z-index:2;background:color-mix(in srgb,var(--card) 86%,transparent);
+  border:1px solid var(--line);border-radius:14px;padding:14px 18px;max-width:270px;
+  opacity:0;transform:translateY(16px);transition:opacity .5s,transform .5s;
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.co.in{opacity:1;transform:none}
+.co b{display:block;font:700 11px/1 var(--mono);letter-spacing:.3em;color:var(--accent);margin-bottom:7px}
+.co span{font-size:13px;color:var(--fg2)}
+.rail{position:absolute;right:clamp(18px,4vw,50px);top:50%;transform:translateY(-50%);z-index:2;
+  display:flex;flex-direction:column;align-items:center;gap:14px}
+.rail-dot{width:9px;height:9px;border-radius:50%;background:var(--line2);transition:background .3s,box-shadow .3s}
+.rail-dot.on{background:var(--accent);box-shadow:var(--glow)}
+</style>
+<style>
+/* ============ collection ============ */
+.c-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.c-card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--r2);padding:22px 22px 18px;
+  cursor:pointer;transition:transform .3s,border-color .3s,box-shadow .3s;overflow:hidden}
+.c-card:hover{transform:translateY(-6px);border-color:var(--accent);box-shadow:var(--shadow)}
+.c-card.on{border-color:var(--accent);box-shadow:var(--glow)}
+.c-code{font:700 11px/1 var(--mono);letter-spacing:.3em;color:var(--accent)}
+.c-name{margin:10px 0 6px;font-size:22px;font-weight:800;letter-spacing:-.01em}
+.c-tag{color:var(--muted);font-size:13.5px;margin:0 0 16px;min-height:40px}
+.mini-car{position:relative;height:64px;margin:6px 0 16px}
+.mini-car .m-body{position:absolute;left:2%;right:6%;bottom:16px;height:26px;background:var(--paint,#7db2ff);
+  border-radius:16px 26px 7px 7px/22px 26px 8px 8px}
+.mini-car .m-cab{position:absolute;left:34%;bottom:36px;width:34%;height:20px;background:var(--glass,var(--line2));
+  border-radius:16px 24px 4px 10px/24px 24px 4px 12px}
+.mini-car .m-w{position:absolute;bottom:2px;width:22px;height:22px;border-radius:50%;background:var(--bg2);
+  border:4.5px solid var(--dim)}
+.mini-car .m-w1{left:12%}.mini-car .m-w2{right:16%}
+.c-specs{display:flex;gap:10px;margin-bottom:14px}
+.c-specs span{font:600 10.5px/1 var(--mono);letter-spacing:.12em;color:var(--muted);
+  border:1px solid var(--line);border-radius:999px;padding:6px 10px}
+.c-foot{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.c-price{font:700 17px/1 var(--mono)}
+.c-price small{display:block;font:500 9.5px/1.4 var(--mono);letter-spacing:.2em;color:var(--dim);margin-top:5px}
+.c-add{border:1px solid var(--line2);background:var(--card2);color:var(--fg);border-radius:999px;
+  padding:10px 18px;font-weight:600;font-size:13px;cursor:pointer;transition:border-color .2s,transform .2s}
+.c-add:hover{border-color:var(--accent);transform:translateY(-2px)}
+
+/* ============ configurator ============ */
+.cfg{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:34px;align-items:start}
+.cfg-stage{position:sticky;top:calc(var(--nav-h) + 18px);border:1px solid var(--line);border-radius:var(--r2);
+  background:color-mix(in srgb,var(--card) 55%,transparent);padding:26px 0 8px;overflow:hidden}
+.cfg-stage .hint{margin:0 auto 14px;width:max-content;max-width:92%;
+  font:500 10px/1 var(--mono);letter-spacing:.34em;text-transform:uppercase;color:var(--dim);text-align:center}
+.cfg-groups{display:flex;flex-direction:column;gap:30px}
+.cfg-group h4{margin:0 0 12px;font:600 11px/1 var(--mono);letter-spacing:.36em;text-transform:uppercase;color:var(--muted)}
+.chips{display:flex;gap:9px;flex-wrap:wrap}
+.chip{position:relative;border:1px solid var(--line);background:var(--card);border-radius:13px;padding:11px 15px;
+  font-size:13.5px;font-weight:600;color:var(--fg2);cursor:pointer;
+  display:inline-flex;align-items:center;gap:9px;transition:border-color .2s,background .2s,color .2s,transform .2s}
+.chip:hover{border-color:var(--line2);transform:translateY(-1px)}
+.chip:hover{border-color:var(--accent)}
+.chip.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--card));color:var(--fg)}
+.chip .sw{width:15px;height:15px;border-radius:5px;border:1px solid rgba(255,255,255,.35);flex:none}
+.chip .plus{font:700 11px/1 var(--mono);color:var(--accent)}
+.chip[disabled]{opacity:.45;cursor:not-allowed;transform:none}
+.cfg-note{font-size:12.5px;color:var(--dim);margin-top:10px}
+.cfg-panel{position:sticky;top:calc(var(--nav-h) + 18px);background:var(--card);border:1px solid var(--line);
+  border-radius:var(--r2);padding:24px;box-shadow:var(--shadow)}
+.cfg-panel h4{margin:0 0 4px;font-size:21px;font-weight:800}
+.cfg-panel .pmodel{font:600 10.5px/1 var(--mono);letter-spacing:.3em;color:var(--accent);text-transform:uppercase}
+.cfg-line{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
+.cfg-line span{color:var(--muted)}
+.cfg-line b{font-weight:600;color:var(--fg);display:flex;gap:12px}
+.cfg-line .fp{font-family:var(--mono);font-size:12px;color:var(--fg2)}
+.tot{display:flex;justify-content:space-between;align-items:baseline;margin:16px 0 6px}
+.tot span{font-size:13px;color:var(--muted)}
+.tot b{font:700 26px/1 var(--mono)}
+.finger{font:500 10.5px/1.5 var(--mono);color:var(--dim);letter-spacing:.06em;margin:0 0 14px;word-break:break-all}
+.cfg-panel .btn{width:100%;justify-content:center;text-align:center}
+.share-b{margin-top:10px;width:100%;justify-content:center;display:inline-flex;gap:8px}
+.fb-stage{position:relative;padding:12% 10%;display:grid;place-items:center}
+.fb-stage .carline{width:min(420px,80%);height:0;border-top:2px solid var(--line2);border-radius:50%/100% 100% 0 0;height:90px;
+  border-bottom:none;background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 26%,transparent),transparent)}
+
+/* ============ performance counters ============ */
+.perf{background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--card) 45%,transparent) 30%,transparent)}
+.perf-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.perf-cell{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:26px 22px;text-align:center}
+.perf-cell b{display:block;font:700 clamp(34px,4.5vw,52px)/1 var(--mono);letter-spacing:-.02em;color:var(--fg)}
+.perf-cell b i{font-style:normal;font-size:.45em;color:var(--accent);margin-inline-start:4px;letter-spacing:0}
+.perf-cell span{display:block;margin-top:12px;font:600 10.5px/1.5 var(--mono);letter-spacing:.26em;color:var(--dim);text-transform:uppercase}
+
+/* ============ engineering rows ============ */
+.eng-row{display:grid;grid-template-columns:80px minmax(0,2fr) minmax(0,3fr);gap:26px;padding:30px 0;border-top:1px solid var(--line);align-items:baseline}
+.eng-row:last-child{border-bottom:1px solid var(--line)}
+.eng-row .n{font:700 13px/1 var(--mono);letter-spacing:.14em;color:var(--accent)}
+.eng-row h3{margin:0 0 8px;font-size:clamp(19px,2.2vw,25px);font-weight:800;letter-spacing:-.01em}
+.eng-row p{margin:0;color:var(--muted);font-size:14.5px}
+.eng-row u{all:unset;font:700 11px/1 var(--mono);letter-spacing:.2em;color:var(--fg2)}
+
+/* ============ showrooms ============ */
+.sh-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.sh-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:22px;transition:border-color .25s}
+.sh-card:hover{border-color:var(--line2)}
+.sh-card b{display:block;font-size:17px;font-weight:800;margin-bottom:4px}
+.sh-card span{color:var(--muted);font-size:13.5px}
+.sh-card .hr{margin-top:14px;font:500 10px/1 var(--mono);letter-spacing:.3em;color:var(--dim);text-transform:uppercase}
+
+/* ============ newsletter ============ */
+.nl{max-width:520px}
+.nl-row{display:flex;gap:10px;margin-top:18px}
+.nl-row input{flex:1;min-width:0;height:50px;border-radius:999px;border:1px solid var(--line2);background:var(--card);
+  padding:0 20px;font-size:14.5px;color:var(--fg)}
+.nl-row input::placeholder{color:var(--dim)}
+.nl-note{font-size:12px;color:var(--dim);margin-top:10px}
+
+/* ============ footer ============ */
+.foot{border-top:1px solid var(--line);margin-top:40px}
+.foot-in{max-width:var(--maxw);margin:0 auto;padding:54px clamp(20px,6vw,72px) 40px;
+  display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:30px}
+.foot h5{margin:0 0 12px;font:600 10.5px/1 var(--mono);letter-spacing:.34em;text-transform:uppercase;color:var(--dim)}
+.foot a{display:block;color:var(--muted);font-size:13.5px;padding:5px 0;transition:color .2s}
+.foot a:hover{color:var(--fg)}
+.foot .brandline b{font-size:19px;letter-spacing:.18em}
+.foot .brandline b em{color:var(--accent);font-style:normal}
+.foot .brandline p{color:var(--muted);font-size:13.5px;max-width:30ch;margin:12px 0 0}
+.legal{max-width:var(--maxw);margin:0 auto;padding:0 clamp(20px,6vw,72px) 36px;display:flex;gap:14px;
+  align-items:center;justify-content:space-between;flex-wrap:wrap;font-size:12px;color:var(--dim)}
+.legal .disc{max-width:70ch;line-height:1.55}
+
+/* ============ drawer (cart) ============ */
+.scrim{position:fixed;inset:0;z-index:130;background:rgba(4,6,9,.62);opacity:0;visibility:hidden;
+  transition:opacity .3s,visibility .3s;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.scrim.open{opacity:1;visibility:visible}
+.drawer{position:fixed;top:0;right:0;max-width:430px;width:100%;bottom:0;z-index:140;display:flex;flex-direction:column;
+  background:var(--bg2);border-left:1px solid var(--line);transform:translateX(102%);transition:transform .42s cubic-bezier(.19,1,.22,1)}
+[dir="rtl"] .drawer{border-left:none;border-right:1px solid var(--line)}
+.drawer.open{transform:none}
+.dr-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 22px;border-bottom:1px solid var(--line)}
+.dr-head h3{margin:0;font-size:16px;font-weight:800;letter-spacing:.06em}
+.dr-head .x{position:static;transform:none}
+.dr-list{flex:1;overflow-y:auto;padding:10px 22px}
+.dr-line{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
+.dr-line .dot{width:38px;height:38px;border-radius:11px;background:var(--paint,#7db2ff);opacity:.8;display:grid;place-items:center;
+  font:700 11px/1 var(--mono);color:#0a1524}
+.dr-line .t{min-width:0}
+.dr-line .t b{display:block;font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dr-line .t span{font-size:11.5px;color:var(--muted);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dr-line .p{font:600 13px/1 var(--mono);color:var(--fg2)}
+.dr-line .rm{margin-top:6px;background:none;border:0;color:var(--err);font-size:11.5px;cursor:pointer;padding:0;letter-spacing:.06em}
+.dr-line .rm:hover{text-decoration:underline}
+.dr-empty{text-align:center;color:var(--dim);padding:60px 10px;font-size:14px}
+.dr-foot{border-top:1px solid var(--line);padding:18px 22px}
+.dr-tot{display:flex;justify-content:space-between;font-size:15px;margin-bottom:14px}
+.dr-tot b{font:700 20px/1 var(--mono)}
+.dr-note{font-size:11px;color:var(--dim);margin:10px 0 0}
+
+/* ============ checkout modal ============ */
+.modal{position:fixed;inset:0;z-index:150;display:grid;place-items:center;padding:18px;
+  opacity:0;visibility:hidden;transition:opacity .3s,visibility .3s}
+.modal.open{opacity:1;visibility:visible}
+.m-box{width:min(560px,100%);max-height:min(88vh,780px);overflow-y:auto;background:var(--bg2);border:1px solid var(--line2);
+  border-radius:var(--r2);padding:26px;transform:translateY(18px) scale(.98);transition:transform .35s cubic-bezier(.19,1,.22,1);
+  box-shadow:var(--shadow)}
+.modal.open .m-box{transform:none}
+.m-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.m-head h3{margin:0;font-size:19px;font-weight:800}
+.m-title{font:600 10.5px/1 var(--mono);letter-spacing:.34em;text-transform:uppercase;color:var(--accent);margin:0 0 14px}
+.f-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.f-field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.f-field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.f-field label,.f-row label{font:600 10px/1 var(--mono);letter-spacing:.24em;text-transform:uppercase;color:var(--dim)}
+.f-field input,.f-row input{height:46px;border-radius:12px;border:1px solid var(--line2);background:var(--card);
+  padding:0 14px;font-size:14.5px;color:var(--fg);width:100%}
+.f-field input:focus,.f-row input:focus{border-color:var(--accent);outline:none}
+.pay-card{border:1px dashed var(--line2);border-radius:14px;padding:16px;margin-bottom:14px}
+.pay-card .row1{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;margin-bottom:8px}
+.pay-card .row1 svg{width:20px;height:20px;flex:none}
+.pay-card p{margin:0;font-size:12px;color:var(--muted)}
+.sim-lane{display:flex;align-items:center;gap:10px;margin-top:10px;opacity:0;transition:opacity .3s}
+.sim-lane.on{opacity:1}
+.sim-lane .wheel{width:18px;height:18px;border:2px solid var(--line2);border-top-color:var(--accent);border-radius:50%;
+  animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(1turn)}}
+.sim-lane span{font:500 11px/1.5 var(--mono);color:var(--muted);letter-spacing:.08em}
+.success-view{text-align:center;padding:22px 0 10px}
+.success-view .ring{width:74px;height:74px;margin:0 auto 18px;border-radius:50%;display:grid;place-items:center;
+  border:2px solid var(--ok);color:var(--ok)}
+.success-view .ring svg{width:32px;height:32px}
+.success-view h4{margin:0 0 8px;font-size:21px;font-weight:800}
+.success-view p{margin:0 0 6px;color:var(--muted);font-size:14px}
+.order-id{font:700 15px/1 var(--mono);letter-spacing:.1em;color:var(--accent);margin:10px 0 20px}
+
+/* ============ toast ============ */
+.toasts{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:170;display:flex;flex-direction:column;gap:10px;align-items:center;pointer-events:none}
+.toast{background:var(--card);border:1px solid var(--line2);border-radius:999px;padding:12px 22px;font-size:13.5px;
+  display:flex;align-items:center;gap:10px;box-shadow:var(--shadow);opacity:0;transform:translateY(14px);
+  transition:opacity .3s,transform .3s}
+.toast.in{opacity:1;transform:none}
+.toast .tdot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none}
+.toast.ok .tdot{background:var(--ok)}
+.toast.warn .tdot{background:var(--warn)}
+.toast.err .tdot{background:var(--err)}
+
+/* ============ responsive ============ */
+@media (max-width:1080px){
+  .c-grid{grid-template-columns:1fr 1fr}
+  .sh-grid{grid-template-columns:1fr 1fr}
+  .cfg{grid-template-columns:1fr}
+  .cfg-stage,.cfg-panel{position:static}
+  .foot-in{grid-template-columns:1fr 1fr}
+}
+@media (max-width:820px){
+  .nav-links{display:none}
+  .burger{display:grid}
+  .c-grid{grid-template-columns:1fr}
+  .sh-grid{grid-template-columns:1fr}
+  .perf-grid{grid-template-columns:1fr 1fr}
+  .eng-row{grid-template-columns:56px 1fr;gap:16px}
+  .eng-row p{grid-column:1/-1}
+  .dragzone{inset:auto 0 22vh 0;height:40vh}
+  .hero-hint{display:none}
+  .rail{display:none}
+  .co{max-width:210px;padding:10px 13px}
+  .f-row{grid-template-columns:1fr}
+  .hero-stats>div{padding:11px 15px}
+}
+@media (max-width:520px){
+  .foot-in{grid-template-columns:1fr}
+  .pl-brand{font-size:34px}
+  .nl-row{flex-direction:column}
+}
+
+/* ============ RTL ============ */
+[dir="rtl"] .hero-title{letter-spacing:0;text-transform:none}
+[dir="rtl"] .c-name,[dir="rtl"] .sec-title{letter-spacing:0}
+[dir="rtl"] .nav-brand small,[dir="rtl"] .kicker{letter-spacing:.18em;text-indent:0}
+</style>
+</head>
+<body>
+<a class="sr" href="#hero" data-ix="skip">Skip to content</a>
+<canvas id="gl" aria-hidden="true"></canvas>
+<div class="stage-vig" aria-hidden="true"></div>
+<div class="cur" aria-hidden="true"></div><div class="cur-ring" aria-hidden="true"></div>
+
+<header class="nav" id="nav">
+  <a class="nav-brand" href="#hero">BMW<b>M5</b><small>E34</small></a>
+  <nav class="nav-links" aria-label="Primary">
+    <a href="#collection" data-ix="n1">Collection</a>
+    <a href="#configurator" data-ix="n2">Configurator</a>
+    <a href="#engineering" data-ix="n3">Engineering</a>
+    <a href="#showrooms" data-ix="n4">Showrooms</a>
+  </nav>
+  <div class="nav-sp"></div>
+  <div class="nav-act">
+    <select class="cur-sel" id="curSel" aria-label="Currency">
+      <option value="USD">USD $</option><option value="EGP">EGP</option>
+      <option value="AED">AED</option><option value="SAR">SAR</option>
+    </select>
+    <select class="cur-sel" id="langSel" aria-label="Language">
+      <option value="en">EN</option><option value="ar">ع</option>
+    </select>
+    <button class="icobtn" id="themeBtn" aria-label="Theme"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.6"/><path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.2 5.2l1.6 1.6M17.2 17.2l1.6 1.6M18.8 5.2l-1.6 1.6M6.8 17.2l-1.6 1.6"/></svg></button>
+    <button class="icobtn cart-b" id="cartBtn" aria-label="Cart"><svg viewBox="0 0 24 24"><path d="M3 4h2.2l2.5 12.2h11.1l2.2-9H6.1"/><circle cx="9.4" cy="20" r="1.5"/><circle cx="17.6" cy="20" r="1.5"/></svg><span class="cart-badge" id="cartBadge" aria-hidden="true">0</span></button>
+    <button class="icobtn burger" id="burger" aria-label="Menu"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+  </div>
+</header>
+
+<div class="menu" id="menu" hidden>
+  <a href="#collection">Collection</a>
+  <a href="#configurator">Configurator</a>
+  <a href="#engineering">Engineering</a>
+  <a href="#showrooms">Showrooms</a>
+  <div class="menu-foot">
+    <button class="btn btn-ghost" id="menuTheme">Theme</button>
+    <button class="btn btn-ghost" id="menuLang">العربية</button>
+  </div>
+</div>
+
+<main id="main">
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <div class="hero-copy">
+      <p class="hero-code">Concept Atelier · MMXXVI</p>
+      <h1 class="hero-title" id="heroTitle">
+        <span class="t-line"><span class="t-in">FORM</span></span>
+        <span class="t-line"><span class="t-in">FORGED IN</span></span>
+        <span class="t-line"><span class="t-in" style="color:var(--accent)">WIND.</span></span>
+      </h1>
+      <p class="hero-sub" data-ix="heroSub">The legendary BMW M5 E34 — 3.8 L inline-six, 250 km/h, 1992–1995. Configure paint, wheels and trim on a real 3D model.</p>
+      <div class="hero-stats rv rv-d2">
+        <div><b>BMW</b><span>M5 E34</span></div>
+        <div><b>3.8 L</b><span>Inline-6</span></div>
+        <div><b>250</b><span>km/h</span></div>
+      </div>
+      <div class="cta-row">
+        <button class="btn btn-p" data-goto="configurator">Open configurator</button>
+        <button class="btn btn-ghost" data-scrollto="story">The build, layer by layer</button>
+      </div>
+    </div>
+    <div class="dragzone" id="dragzone" aria-hidden="true"><div class="grab-dot"></div></div>
+    <div class="hero-hint"><span class="grab-dot"></span><span data-ix="drag">drag to rotate</span></div>
+    <div class="fb-car" id="fbCar" hidden aria-hidden="true">
+      <div class="fb-body"></div><div class="fb-glass"></div>
+      <div class="fb-w fb-w1"></div><div class="fb-w fb-w2"></div>
+    </div>
+  </section>
+
+  <!-- STORY -->
+  <section class="story" id="story">
+    <div class="story-pin">
+      <div class="story-copy">
+        <article class="story-step" data-step="0">
+          <b>01 / The Model</b>
+          <h3 data-ix="st1t">A real car, in your browser.</h3>
+          <p data-ix="st1p">The BMW M5 E34 loads as a true GLB — geometry, materials and textures — straight from a file into the studio viewport.</p>
+        </article>
+        <article class="story-step" data-step="1" hidden>
+          <b>02 / Light</b>
+          <h3 data-ix="st2t">Studio light on real surfaces.</h3>
+          <p data-ix="st2p">PMREM environment, directional key/rim/fill and a contact shadow blob make the loaded model read as a physical object.</p>
+        </article>
+        <article class="story-step" data-step="2" hidden>
+          <b>03 / Finish</b>
+          <h3 data-ix="st3t">Paint that follows your choice.</h3>
+          <p data-ix="st3p">Paint selection tints the materials marked tintable on the loaded model, so the body changes color live.</p>
+        </article>
+        <article class="story-step" data-step="3" hidden>
+          <b>04 / Reveal</b>
+          <h3 data-ix="st4t">Explode into the story.</h3>
+          <p data-ix="st4p">Scroll-driven explode lifts the whole car into the story, with callouts, rail and parallax — same engine, real model.</p>
+        </article>
+      </div>
+      <aside class="co" data-co="0" style="left:56%;top:20%"><b>Aero</b><span data-ix="co0">Active diffuser trims drag to Cd 0.26 in simulation.</span></aside>
+      <aside class="co" data-co="1" style="left:60%;top:66%"><b>Battery</b><span data-ix="co1">Floor-mounted slab drops the seat to 38 cm.</span></aside>
+      <aside class="co" data-co="2" style="left:70%;top:24%"><b>Wheels</b><span data-ix="co2">21″ nominal diameter, generated per axle.</span></aside>
+      <aside class="co" data-co="3" style="left:26%;top:64%"><b>Signal</b><span data-ix="co3">Emissive strip doubles as brake-vector display.</span></aside>
+      <div class="rail" id="rail" aria-hidden="true">
+        <i class="rail-dot on"></i><i class="rail-dot"></i><i class="rail-dot"></i><i class="rail-dot"></i>
+      </div>
+    </div>
+  </section>
+
+  <!-- COLLECTION -->
+  <section class="sec" id="collection">
+    <p class="kicker rv">The Garage</p>
+    <h2 class="sec-title rv" data-ix="colT">The Legend. One Philosophy.</h2>
+    <p class="sec-sub rv rv-d1" data-ix="colS">A single real-world model — the BMW M5 E34 — loaded as a true GLB. Configure paint, wheels, roof and trim; price and config key update live.</p>
+    <div class="c-grid" id="carGrid"></div>
+  </section>
+
+  <!-- CONFIGURATOR -->
+  <section class="sec" id="configurator">
+    <p class="kicker rv">Configurator</p>
+    <h2 class="sec-title rv" data-ix="cfgT">Make it unmistakably yours.</h2>
+    <p class="sec-sub rv rv-d1" data-ix="cfgS">Selections are patched onto the live model in real time. Prices are fictional and exist to make the spreadsheet gods smile.</p>
+    <div class="cfg">
+      <div class="cfg-stage rv">
+        <p class="hint" data-ix="cfgHint">drag on the canvas edge · pinch to zoom</p>
+        <div class="fb-stage" id="cfgFallback" hidden><div class="carline"></div></div>
+      </div>
+      <div class="cfg-panel rv rv-d1" id="cfgPanel"></div>
+    </div>
+    <div class="cfg-groups rv" id="cfgGroups" style="margin-top:34px"></div>
+  </section>
+
+  <!-- PERFORMANCE -->
+  <section class="sec perf" id="performance">
+    <p class="kicker rv">Telemetry</p>
+    <h2 class="sec-title rv" data-ix="perfT">Numbers, honestly rounded.</h2>
+    <div class="perf-grid" id="perfGrid"></div>
+  </section>
+
+  <!-- ENGINEERING -->
+  <section class="sec" id="engineering">
+    <p class="kicker rv">Engineering</p>
+    <h2 class="sec-title rv" data-ix="engT">Four chapters of the build.</h2>
+    <div class="rv">
+      <div class="eng-row"><span class="n">CH·1</span><div><h3 data-ix="e1t">GLB real model</h3><p data-ix="e1p">The BMW M5 E34 is loaded as a true GLB (geometry, materials, textures) via THREE.GLTFLoader — not procedurally generated.</p></div></div>
+      <div class="eng-row"><span class="n">CH·2</span><div><h3 data-ix="e2t">Studio lighting</h3><p data-ix="e2p">PMREM environment, key/rim/fill directional lights, hemisphere, contact shadow blob and studio dust — same engine, real model.</p></div></div>
+      <div class="eng-row"><span class="n">CH·3</span><div><h3 data-ix="e3t">Live tinting</h3><p data-ix="e3p">Paint selection tints the body materials that are marked tintable; wheels, roof and trim update price and config key live.</p></div></div>
+      <div class="eng-row"><span class="n">CH·4</span><div><h3 data-ix="e4t">Light as structure</h3><p data-ix="e4p">Front and rear emissive strips are cheap world-space materials — visible, not vomiting.</p></div></div>
+    </div>
+  </section>
+
+  <!-- SHOWROOMS -->
+  <section class="sec" id="showrooms">
+    <p class="kicker rv">Showrooms</p>
+    <h2 class="sec-title rv" data-ix="shT">Visit the imaginary network.</h2>
+    <p class="sec-sub rv rv-d1" data-ix="shS">These ateliers do not exist — which keeps them immaculate.</p>
+    <div class="sh-grid" id="showGrid"></div>
+  </section>
+
+  <!-- NEWSLETTER -->
+  <section class="sec" id="newsletter">
+    <div class="nl">
+      <p class="kicker rv">Dispatch</p>
+      <h2 class="sec-title rv" data-ix="nlT">Letters from the wind tunnel.</h2>
+      <p class="sec-sub rv rv-d1" data-ix="nlS">One e-mail per fictional quarter. Unsubscribe with one fictional click.</p>
+      <form class="nl-row rv rv-d2" id="nlForm">
+        <input type="email" id="nlMail" data-ix-ph="nlPh" placeholder="you@studio.example" autocomplete="email" required>
+        <button class="btn btn-p" type="submit" data-ix="nlGo">Join</button>
+      </form>
+      <p class="nl-note" id="nlNote"></p>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="foot-in">
+    <div class="brandline">
+      <b>BMW<em> M5</em> E34</b>
+      <p data-ix="footA">Concept-car studio demo. Everything you configure lives and dies inside this browser tab.</p>
+    </div>
+    <div><h5>Studio</h5><a href="#collection">Collection</a><a href="#configurator">Configurator</a><a href="#engineering">Engineering</a></div>
+    <div><h5>More</h5><a href="#performance">Telemetry</a><a href="#showrooms">Showrooms</a><a href="#story">Build story</a></div>
+    <div><h5>Legal</h5><a href="#" data-ix="fPrivacy">Privacy (none collected)</a><a href="#" data-ix="fTerms">Terms (fictional)</a></div>
+  </div>
+  <div class="legal">
+    <span>© 2026 CARX ATELIER — fictional demo</span>
+    <span class="disc" data-ix="fDisc">The BMW M5 E34 model is loaded from a GLB file. All prices and configurations are demonstrative fiction. No real vehicles are sold.</span>
+  </div>
+</footer>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" aria-label="Cart" hidden></aside>
+<div class="modal" id="modal" hidden></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+  }
+}
+</script>
+
+<div class="pl" id="pl">
+  <div class="pl-brand">CAR<b>X</b></div>
+  <div class="pl-bar"><i id="plBar"></i></div>
+  <div class="pl-num" id="plNum">0%</div>
+  <div class="pl-cap" data-ix="plCap">Entering the studio</div>
+</div>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+window.THREE = THREE;
+"use strict";
+/* ============================================================
+   CARX ATELIER — BMW M5 E34 studio
+   ============================================================ */
+
+/* 01 · tiny utils ------------------------------------------------ */
+const $ = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.prototype.slice.call((r || document).querySelectorAll(s));
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const TAU = Math.PI * 2;
+const elNew = (tag, cls, html) => {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (html != null) n.innerHTML = html;
+  return n;
+};
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+/* error net ------------------------------------------------------ */
+const errs = [];
+try {
+  window.addEventListener("error", (e) => errs.push("js: " + (e.message || e.type) + (e.lineno ? " @" + e.lineno : "")));
+  window.addEventListener("unhandledrejection", (e) => errs.push("promise: " + ((e.reason && e.reason.message) || e.reason)));
+} catch (e) { /* old browsers */ }
+function qsaSafe(s) { try { return $$(s); } catch (e) { return []; } }
+
+/* 02 · environment ------------------------------------------------ */
+const ENV = { fine: true, touch: false, mobile: false, webgl: true, dpr: 1, reduce: false, w: 0, h: 0 };
+function mm(q) { try { return window.matchMedia(q).matches; } catch (e) { return false; } }
+function refreshEnv() {
+  ENV.fine = !mm("(pointer:coarse)") && !mm("(max-width:820px)");
+  ENV.touch = mm("(pointer:coarse)") || ("ontouchstart" in window);
+  ENV.mobile = mm("(max-width:820px)");
+  ENV.reduce = mm("(prefers-reduced-motion: reduce)");
+  ENV.dpr = Math.min(window.devicePixelRatio || 1, 2);
+  ENV.w = window.innerWidth; ENV.h = window.innerHeight;
+}
+function hasWebGL() {
+  try {
+    const c = document.createElement("canvas");
+    return !!(window.WebGLRenderingContext && (c.getContext("webgl") || c.getContext("experimental-webgl")));
+  } catch (e) { return false; }
+}
+
+/* 03 · data — everything fictional -------------------------------- */
+const FX_BASE = { USD: 1, EGP: 48.6, AED: 3.6725, SAR: 3.75 };
+const CURS = ["USD", "EGP", "AED", "SAR"];
+const SYM = {
+  en: { USD: "$", EGP: "E£", AED: "AED ", SAR: "SAR " },
+  ar: { USD: "$", EGP: "E£", AED: "د.إ ", SAR: "ر.س " }
+};
+const MODELS = [
+  {
+    id: "bmw", code: "BMW·M5", nm: { en: "M5 E34 Touring", ar: "إم5 إي34 تورينغ" }, kind: "wagon", base: 98000,
+    specs: { range: 560, sprint: 4.9, top: 250, power: 232 },
+    blurb: { en: "The legendary E34 M5 — a 3.8 L inline-six grand tourer, reborn here as a real-time 3D atelier piece.", ar: "الأسطورة إي34 إم5 — سداسية 3.8 لتر جراند تورر، تُعاد هنا كقطعة أتيليه ثلاثية الأبعاد." },
+    roofs: ["fixed", "panorama"]
+  }
+];
+const PAINTS = [
+  { id: "glacier",  hex: 0xe9edf0, css: "#e9edf0", nm: { en: "Glacier White", ar: "أبيض جليدي" },   price: 0,    metal: 0.25 },
+  { id: "graphite", hex: 0x454a52, css: "#454a52", nm: { en: "Graphite", ar: "غرفيت" },             price: 0,    metal: 0.72 },
+  { id: "emerald",  hex: 0x0e5c46, css: "#0e5c46", nm: { en: "Emerald Deep", ar: "زمرد غائر" },     price: 4200, metal: 0.75 },
+  { id: "crimson",  hex: 0x8a1730, css: "#8a1730", nm: { en: "Crimson Silk", ar: "حرير قرمزي" },    price: 4200, metal: 0.5 },
+  { id: "azure",    hex: 0x1e4f96, css: "#1e4f96", nm: { en: "Azure Drift", ar: "أزرق انسيابي" },   price: 4200, metal: 0.6 },
+  { id: "obsidian", hex: 0x14161a, css: "#14161a", nm: { en: "Obsidian Metal", ar: "أپسيديان معدني" }, price: 6800, metal: 0.92 }
+];
+const WHEELS = [
+  { id: "aero5",     css: "#9aa2ab", nm: { en: "Aero 5", ar: "إيرو ٥" },       spokes: 5,  price: 0,    mat: "cast" },
+  { id: "turbine10", css: "#c0c6cd", nm: { en: "Turbine 10", ar: "تربين ١٠" }, spokes: 10, price: 2800, mat: "machined" },
+  { id: "carbon",    css: "#2a2e33", nm: { en: "Carbon Loop", ar: "كاربون لوب" }, spokes: 6, price: 6400, mat: "carbon" }
+];
+const TRIMS = [
+  { id: "standard", css: "#8f98a3", nm: { en: "Standard", ar: "قياسي" },        price: 0,    accent: 0x8f98a3 },
+  { id: "sport",    css: "#ff5a3c", nm: { en: "Sport", ar: "سبورت" },          price: 3200, accent: 0xff5a3c },
+  { id: "atelier",  css: "#e8c66a", nm: { en: "Atelier", ar: "أتيليه" },       price: 7900, accent: 0xe8c66a }
+];
+const ROOFB = {
+  fixed:    { nm: { en: "Fixed", ar: "ثابت" },         price: 0 },
+  panorama: { nm: { en: "Panorama", ar: "بانوراما" },  price: 3500 },
+  carbon:   { nm: { en: "Carbon Roof", ar: "سقف كاربون" }, price: 5200 },
+  spyder:   { nm: { en: "Spyder (open)", ar: "سبايدر (مكشوف)" }, price: 0 },
+  tonneau:  { nm: { en: "Tonneau cover", ar: "غطاء مؤخرة" }, price: 2100 }
+};
+const SHOWROOMS = [
+  { city: { en: "Kingston Quay", ar: "كينجستون كواي" },   hall: { en: "The Slate Hall", ar: "قاعة الأردواز" } },
+  { city: { en: "Meridian Plaza", ar: "ميريديان بلازا" }, hall: { en: "Atelier Rivière", ar: "أتيليه ريفيير" } },
+  { city: { en: "Old Harbour", ar: "الميناء القديم" },    hall: { en: "Zephyr Pavilion", ar: "جناح الزفير" } }
+];
+
+/* 04 · i18n -------------------------------------------------------- */
+const TEX = {
+  en: {
+    skip: "Skip to content",
+    n1: "Collection", n2: "Configurator", n3: "Engineering", n4: "Showrooms",
+    heroT1: "BMW", heroT2: "M5", heroT3: "E34.",
+    heroSub: "The legendary BMW M5 E34 — 3.8 L inline-six, 250 km/h, 1992–1995. Configure paint, wheels and trim on a real 3D model.",
+    ctaCfg: "Open configurator", ctaStory: "The build, layer by layer",
+    drag: "drag to rotate", plCap: "Entering the studio",
+    st1t: "One profile, four surfaces.",
+    st1p: "The body begins as a single side-view line, extruded across the track and bevelled into shoulders. No seams, no badges — just light slipping over one continuous form.",
+    st2t: "Two motors, zero shift shock.",
+    st2p: "An axial-flux motor spins each axle. In explode view you can lift the battery slab out of the floor and see how low mass loves a low roof.",
+    st3t: "Spokes cut from air.",
+    st3p: "Five aero blades or ten turbine fins — every wheel is generated as instances, so changing a style rebuilds in milliseconds, not test laps.",
+    st4t: "A signature in one stroke.",
+    st4p: "A single light strip runs nose to tail. Headlights read white, the tail reads ember; at night the car is recognisable from one pixel row.",
+    co0: "Active diffuser trims drag to Cd 0.26 in simulation.",
+    co1: "Floor-mounted battery slab drops the seat height to 38 cm.",
+    co2: "21&#8243; wheel diameter, generated per axle.",
+    co3: "Emissive strip doubles as a brake-vector display.",
+    colT: "Three shapes. One philosophy.",
+    colS: "Every model is built from a parametric side profile — pick a chassis and the studio rebuilds it instantly, wearing your paint and wheels.",
+    cfgT: "Make it unmistakably yours.",
+    cfgS: "Selections are patched onto the live model in real time. Prices are fictional and gloriously rounded.",
+    cfgHint: "drag on the hero canvas &middot; pinch to zoom",
+    perfT: "Numbers, honestly rounded.",
+    pL1: "Range (km)", pL2: "0–100 (s)", pL3: "V-max (km/h)", pL4: "Power (kW)",
+    engT: "Four chapters of the build.",
+    e1t: "Extruded monocoque",
+    e1p: "A side profile is extruded across the track width with continuous bevels, then a clearcoat physical pass simulates an eight-layer studio paint.",
+    e2t: "Skateboard powertrain",
+    e2p: "Battery slab between the axles, one axial-flux motor per axle, coils drawn as instances for the explode view.",
+    e3t: "Generative wheels",
+    e3p: "Tyre, barrel, brake disc and spoke fan are built procedurally; three styles exist and any of them boots in under a frame.",
+    e4t: "Light as structure",
+    e4p: "Front and rear emissive strips are cheap world-space materials — visible, not vomiting.",
+    shT: "Visit the imaginary network.",
+    shS: "These ateliers do not exist — which keeps them immaculate.",
+    nlT: "Letters from the wind tunnel.",
+    nlS: "One e-mail per fictional quarter. Unsubscribe with one fictional click.",
+    nlPh: "you@studio.example", nlGo: "Join",
+    nlOk: "You are on the fictional list — stored locally, nowhere else.",
+    nlBad: "That address does not parse. Fictional servers are strict.",
+    footA: "Concept-car studio demo. Everything you configure lives and dies inside this browser tab.",
+    fPrivacy: "Privacy (none collected)", fTerms: "Terms (fictional)",
+    fDisc: "No real vehicles are designed, sold or endorsed. All models, prices and figures are demonstrative fiction.",
+    cardCta: "Configure", baseP: "Base vehicle", plPaint: "Paint", plWheels: "Wheels",
+    plRoof: "Roof", plTrim: "Interior trim", totalP: "Total (fictional)",
+    finger: "Config key", addCart: "Add to cart", share: "Copy share link",
+    copied: "Share link copied", selT: "Loaded: ", added: "Added to cart.",
+    cartT: "Your build queue", cartEmpty: "Your queue is empty — configure something.",
+    subT: "Subtotal", checkout: "Simulate checkout", clear: "Clear queue",
+    minus: "&#8722;", remove: "Remove",
+    modalT: "Simulated checkout", mTitle: "Complete the fictional paperwork",
+    fName: "Name", fPhone: "Phone", kCity: "City (optional)",
+    payT: "Demo payment", payP: "This is a simulation. No payment gateway is contacted, no card data is ever requested or stored.",
+    payGo: "Pay (demo)", sim1: "Contacting the fictional ledger…", sim2: "Stamping your build…",
+    doneT: "Order stamped", doneP: "A fictional courier is preparing a fictional truck. Thank you for playing.",
+    doneBtn: "Back to the studio",
+    curC: "Currency: ", themeL: "Theme switched.", toastWebgl: "No WebGL here — showing the paper model.",
+    kindC: "Coupe", kindG: "Grand tourer", kindR: "Roadster",
+    or: "or", per: "each"
+  },
+  ar: {
+    skip: "تخطَّ إلى المحتوى",
+    n1: "المجموعة", n2: "التهيئة", n3: "الهندسة", n4: "المعارض",
+    heroT1: "BMW", heroT2: "M5", heroT3: "E34.",
+    heroSub: "الأسطورة BMW M5 E34 — محرك 3.8 لتر سداسي، 250 كم/س، 1992–1995. هيّئ الطلاء والعجلات والتشطيب على نموذج 3D حقيقي.",
+    ctaCfg: "افتح التهيئة", ctaStory: "البناء، طبقةً طبقة",
+    drag: "اسحب للتدوير", plCap: "دخول الأتيليه",
+    st1t: "مقطع واحد، أسطح أربعة.",
+    st1p: "يبدأ الهيكل خطاً جانبياً واحداً، يُبَثُّ عرضياً ثم تُشْحَنُ الأكتاف. لا لحامات ولا شعارات — ضوءٌ ينساب على قالبٍ متصل.",
+    st2t: "محركان، وبلا صدمة نقل.",
+    st2p: "محور لكل محور موتور محوري التدفق. في المشهد المفكّك ارفع شبكة البطارية من الأرضية لترى كيف يعشق السقف المنخفض كتلةً منخفضة.",
+    st3t: "شفرات مقطوعة من الهواء.",
+    st3p: "خمس شفرات إيروية أو عشر زعانف توربينية — كل عجلة مولدة كنسخ متكررة، فتُعاد بنيتها في أجزاء من الثانية، لا في حلبة اختبار.",
+    st4t: "توقيعٌ في شريحةٍ واحدة.",
+    st4p: "شريط ضوئي واحد يمتد من الأنف إلى الذيل. الأمام يُقرأ أبيض والخلف جمرة، وفي الليل تُعرَف السيارة من صفّ بكسل واحد.",
+    co0: "الموزّع النشّط يخفض السحب إلى 0.26 في المحاكاة.",
+    co1: "شبكة البطارية المثبتة بالأرضية تُنزل سطح المقعد إلى 38 سم.",
+    co2: "قطر العجلة 21 بوصة، مولّدة لكل محور.",
+    co3: "الشريط المضيء يعمل أيضًا شاشةً لمتجه الفرملة.",
+    colT: "ثلاثة أشكال. فلسفة واحدة.",
+    colS: "كل طراز مبنى من مقطع جانبي بارامتري — اختر هيكلاً ويعيد الأتيليه بناءه فوراً بلونك وعجلاتك.",
+    cfgT: "اجعله لا يُشبِهك ولا يُشبِه غيرك.",
+    cfgS: "تُضبَط اختياراتك على الطراز الحي فوراً. الأسعار خيالية ومقرّبة بشكل مجيد.",
+    cfgHint: "اسحب من حواف المسرح &middot; واقرّب بإصبعين",
+    perfT: "أرقام، مقرّبة بصدق.",
+    pL1: "المدى (كم)", pL2: "0–100 (ث)", pL3: "السرعة القصوى (كم/س)", pL4: "القدرة (كيلوواط)",
+    engT: "أربعة فصول من البناء.",
+    e1t: "أحادية القشرة بالبثق",
+    e1p: "مقطع جانبي يُبَثُّ عبر عرض الشعاع بشُفطٍ متصل، ثم طبقة كليركوت تحاكي طلاء الأتيليه ذا الطبقات الثماني.",
+    e2t: "هيكل زحلقة كهربائي",
+    e2p: "شبكة بطارية بين المحورين، وموتور محوري لكل محور، وملفاته مرسومة كنسخ متكررة لعرض التفكيك.",
+    e3t: "عجلات توليدية",
+    e3p: "الإطار والطارة وقرص الفرامل ومروحة الشفرات مبنية إجرائياً؛ ثلاثة طرازات تجري فوق أيّ واحد منها في أقل من إطار.",
+    e4t: "الضوء بنية",
+    e4p: "شرائط أمامية وخلفية مضيئة بمواد رخيصة ثمناً وجميلة مظهراً — ظاهرة لا صارخة.",
+    shT: "تفضّل بزيارة الشبكة المتخيَّلة.",
+    shS: "هذه الأتيليهات غير موجودة أصلاً — وهذا سرّ رونقها الدائم.",
+    nlT: "رسائل من نفق الريح.",
+    nlS: "بريد واحد لكل ربع سنة خيالي. إلغاء الاشتراك بنقرة خيالية واحدة.",
+    nlPh: "you@studio.example", nlGo: "انضم",
+    nlOk: "أنت على القائمة الخيالية — محفوظة محلياً وحدها.",
+    nlBad: "هذا العنوان لا يُقَرَّأ. خوادمنا الخيالية صارمة.",
+    footA: "استعراض أتيليه سيارات مفاهيمية. كل ما تُهيّئه يعيش وينتهي داخل تبويب متصفحك.",
+    fPrivacy: "الخصوصية (لا يُجمع شيء)", fTerms: "الشروط (خيالية)",
+    fDisc: "لا تُصمَّم ولا تُبَاع ولا تُرعى مركبات حقيقية. جميع الطرازات والأسعار والأرقام خيالية للعرض.",
+    cardCta: "تهيئة", baseP: "السيارة الأساسية", plPaint: "الطلاء", plWheels: "العجلات",
+    plRoof: "السقف", plTrim: "تشطيب المقصورة", totalP: "الإجمالي (خيالي)",
+    finger: "مفتاح القالب", addCart: "أضف إلى السلة", share: "انسخ رابط المشاركة",
+    copied: "نُسخ رابط المشاركة", selT: "حُمّل: ", added: "أُضيف إلى السلة.",
+    cartT: "قائمة طلباتك", cartEmpty: "قائمتك فارغة — هيّئ شيئاً.",
+    subT: "المجموع الفرعي", checkout: "محاكاة الشراء", clear: "إفراغ القائمة",
+    minus: "&#8722;", remove: "إزالة",
+    modalT: "محاكاة الدفع", mTitle: "أكمل الأوراق الخيالية",
+    fName: "الاسم", fPhone: "الهاتف", kCity: "المدينة (اختياري)",
+    payT: "دفع تجريبي", payP: "هذه محاكاة. لا تُستخدم أي بوابة دفع، ولا يُطلب أي بيانات بطاقة ولا يُخزَّن شيء.",
+    payGo: "ادفع (تجريبي)", sim1: "جارٍ الاتصال بالسجل الخيالي…", sim2: "جارٍ ختم طلبك…",
+    doneT: "أُختم الطلب", doneP: "مندوبٌ خيالي يجهّز شاحنةً خيالية. شكراً لأنك لعبت الدور.",
+    doneBtn: "عُد إلى الأتيليه",
+    curC: "العملة: ", themeL: "بدّلنا السمة.", toastWebgl: "لا توجد WebGL هنا — نعرض نموذج الورق.",
+    kindC: "كوبيه", kindG: "جراند تورر", kindR: "رودستر",
+    or: "أو", per: "للوحدة"
+  }
+};
+function t(k) { const d = TEX[state.lang] || TEX.en; return (d[k] != null) ? d[k] : (TEX.en[k] != null ? TEX.en[k] : k); }
+
+/* 05 · state -------------------------------------------------------- */
+const DEF_CFG = { model: "bmw", paint: "glacier", wheels: "aero5", roof: "fixed", trim: "standard" };
+const state = { cfg: { model: "bmw", paint: "glacier", wheels: "aero5", roof: "fixed", trim: "standard" }, cart: [], currency: "USD", lang: "en", theme: "dark" };
+
+function lsGet(k, d) {
+  try { const v = localStorage.getItem("carx:" + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; }
+}
+function lsSet(k, v) { try { localStorage.setItem("carx:" + k, JSON.stringify(v)); } catch (e) { /* private mode */ } }
+
+function modelById(id) { for (let i = 0; i < MODELS.length; i++) if (MODELS[i].id === id) return MODELS[i]; return null; }
+function paintById(id) { for (const p of PAINTS) if (p.id === id) return p; return null; }
+function wheelById(id) { for (const w of WHEELS) if (w.id === id) return w; return null; }
+function trimById(id) { for (const tr of TRIMS) if (tr.id === id) return tr; return null; }
+function roofsFor(m) { return m.roofs.map((rid) => ({ id: rid, nm: ROOFB[rid].nm, price: ROOFB[rid].price })); }
+function kindLabel(m) { const k = { coupe: "kindC", gt: "kindG", roadster: "kindR", wagon: "kindC" }[m.kind] || "kindC"; return t(k); }
+
+function normalizeCfg(c) {
+  const out = { model: (modelById(c.model) && c.model) || DEF_CFG.model };
+  const m = modelById(out.model);
+  out.paint = paintById(c.paint) ? c.paint : DEF_CFG.paint;
+  out.wheels = wheelById(c.wheels) ? c.wheels : DEF_CFG.wheels;
+  out.trim = trimById(c.trim) ? c.trim : DEF_CFG.trim;
+  out.roof = (m.roofs.indexOf(c.roof) >= 0) ? c.roof : m.roofs[0];
+  return out;
+}
+function loadState() {
+  const prefs = lsGet("prefs", null);
+  if (prefs && typeof prefs === "object") {
+    if (CURS.indexOf(prefs.currency) >= 0) state.currency = prefs.currency;
+    if (prefs.lang === "ar" || prefs.lang === "en") state.lang = prefs.lang;
+    state.theme = prefs.theme === "light" ? "light" : "dark";
+  }
+  const cfg = lsGet("cfg", null);
+  if (cfg && typeof cfg === "object") state.cfg = normalizeCfg(Object.assign({}, DEF_CFG, cfg));
+  const cart = lsGet("cart", []);
+  if (Array.isArray(cart)) {
+    state.cart = cart
+      .filter((it) => it && typeof it === "object" && it.cfg && Number(it.q) > 0)
+      .map((it) => ({ k: cfgKey(normalizeCfg(it.cfg)), cfg: normalizeCfg(it.cfg), q: clamp(Math.floor(it.q), 1, 99) }));
+  }
+}
+function savePrefs() { lsSet("prefs", { currency: state.currency, lang: state.lang, theme: state.theme, v: 1 }); }
+function saveCart() { lsSet("cart", state.cart); }
+
+/* pricing ----------------------------------------------------------- */
+let FXRates = Object.assign({}, FX_BASE);
+function priceFor(cfg) {
+  cfg = cfg || state.cfg;
+  const m = modelById(cfg.model);
+  const p = paintById(cfg.paint), w = wheelById(cfg.wheels), tr = trimById(cfg.trim), rf = ROOFB[cfg.roof];
+  return Math.round(m.base + p.price + w.price + tr.price + rf.price);
+}
+function cfgKey(c) { return [c.model, c.paint, c.wheels, c.roof, c.trim].join("|"); }
+function cfgFingerprint(c) {
+  const k = cfgKey(c);
+  let h = 5381; for (let i = 0; i < k.length; i++) { h = ((h << 5) + h + k.charCodeAt(i)) >>> 0; }
+  return "CB-" + h.toString(36).toUpperCase().padStart(7, "0").slice(0, 7);
+}
+function fmtUSD(usd) {
+  const r = isFinite(FXRates[state.currency]) && FXRates[state.currency] > 0 ? FXRates[state.currency] : 1;
+  const symStr = (SYM[state.lang] || SYM.en)[state.currency] || "$";
+  const v = Math.max(0, Math.round(usd * r));
+  let num;
+  try { num = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(v); }
+  catch (e) { num = String(v); }
+  return state.lang === "ar" ? num + " " + symStr.trim() : symStr.trim() + num;
+}
+function refreshRates() {
+  try {
+    const box = lsGet("fx", null);
+    if (box && box.t && box.r && (Date.now() - box.t) < 12 * 3600 * 1000) {
+      FXRates = Object.assign({}, FX_BASE, box.r);
+      return Promise.resolve();
+    }
+    return fetch("https://open.er-api.com/v6/latest/USD", { mode: "cors" })
+      .then((res) => res.json())
+      .then((j) => {
+        const r = j && j.rates; if (!r) return;
+        const pick = {}; for (const c of CURS) if (typeof r[c] === "number" && r[c] > 0) pick[c] = r[c];
+        if (pick.USD) { FXRates = Object.assign({}, FX_BASE, pick); lsSet("fx", { t: Date.now(), r: pick }); renderAllPrices(); }
+      })
+      .catch(() => { /* offline: keep fallback table */ });
+  } catch (e) { return Promise.resolve(); }
+}
+
+/* hash share --------------------------------------------------------- */
+function applyHash() {
+  try {
+    const h = (location.hash || "").replace(/^#/, "");
+    if (!h) return null;
+    const p = new URLSearchParams(h);
+    if (!p.get("model") && !p.get("paint") && !p.get("wheels") && !p.get("roof") && !p.get("trim")) return null;
+    const raw = {
+      model: p.get("model") || state.cfg.model,
+      paint: p.get("paint") || state.cfg.paint,
+      wheels: p.get("wheels") || state.cfg.wheels,
+      roof: p.get("roof") || state.cfg.roof,
+      trim: p.get("trim") || state.cfg.trim
+    };
+    if (!modelById(raw.model)) return null;
+    state.cfg = normalizeCfg(raw);
+    return state.cfg;
+  } catch (e) { errs.push("hash: " + e.message); return null; }
+}
+function syncHash() {
+  try {
+    const c = state.cfg;
+    const p = new URLSearchParams({ model: c.model, paint: c.paint, wheels: c.wheels, roof: c.roof, trim: c.trim });
+    const h = "#" + p.toString();
+    if (location.hash !== h) history.replaceState(null, "", location.pathname + location.search + h);
+  } catch (e) { /* file:// quirks */ }
+}
+
+/* 06 · toasts -------------------------------------------------------- */
+const toastsBox = () => $("#toasts");
+function toast(msg, kind) {
+  const box = toastsBox(); if (!box) return;
+  const n = elNew("div", "toast" + (kind ? " " + kind : ""), '<i class="tdot"></i><span>' + esc(msg) + "</span>");
+  box.appendChild(n);
+  requestAnimationFrame(() => n.classList.add("in"));
+  setTimeout(() => {
+    n.classList.remove("in");
+    setTimeout(() => { if (n.parentNode) n.parentNode.removeChild(n); }, 380);
+  }, 3000);
+}
+window.addEventListener("error", () => { /* toast spam guard: no silent kill */ });
+
+/* 07 · three.js engine ------------------------------------------------ */
+let G = {
+  ready: false, renderer: null, scene: null, cam: null, rig: null, spin: null,
+  floor: null, grid: null, dust: null, blob: null, hemi: null, keyL: null, rimL: null, fillL: null,
+  pmrem: null, env: null, raf: 0, last: 0, inputBound: false
+};
+const view = { ry: -0.62, ryT: -0.62, rx: -0.02, rxT: -0.02, dist: 7.5, distT: 7.5, xT: 0, yT: -0.62, pxS: 0, pxT: 0, pyS: 0, pyT: 0 };
+
+function initThree() {
+  if (!THREE || !hasWebGL()) return false;
+  const canvas = $("#gl");
+  try {
+    const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, powerPreference: "high-performance" });
+    renderer.setPixelRatio(ENV.dpr);
+    try { renderer.outputEncoding = THREE.sRGBEncoding; } catch (e) { /* r minor */ }
+    try { renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.12; } catch (e) { }
+    G.renderer = renderer;
+    G.scene = new THREE.Scene();
+    G.cam = new THREE.PerspectiveCamera(40, ENV.w / Math.max(1, ENV.h), 0.1, 90);
+    rigAndWorld();
+    envAndLight_();
+    floorAndDust();
+    bindInput();
+    onResize();
+    applyThemeToScene();
+    G.renderer.domElement.addEventListener("webglcontextlost", function (e) {
+      e.preventDefault(); errs.push("webgl: context lost");
+      document.body.classList.add("gl-lost");
+      try { disposeThree(); } catch (e2) { }
+    }, { passive: false });
+    G.renderer.domElement.addEventListener("webglcontextrestored", function () {
+      document.body.classList.remove("gl-lost");
+      rebuildAfterLoss();
+    }, { passive: false });
+    G.ready = true;
+    G.last = Date.now();
+    G.raf = requestAnimationFrame(loop);
+    armTicker();
+    return true;
+  } catch (e) {
+    errs.push("three init: " + e.message);
+    return false;
+  }
+}
+
+function rigAndWorld() {
+  G.rig = new THREE.Group();
+  G.spin = new THREE.Group();
+  G.rig.add(G.spin);
+  G.rig.position.y = -0.62;
+  G.rig.position.x = 0;
+  G.scene.add(G.rig);
+}
+
+function envAndLight_() {
+  try {
+    const es = new THREE.Scene();
+    const mk = (c, w, h, x, y, z, ry, rx, inten) => {
+      const g = new THREE.PlaneGeometry(w, h);
+      const m = new THREE.MeshBasicMaterial({ color: c });
+      if (inten != null) { m.color.multiplyScalar(inten); }
+      const p = new THREE.Mesh(g, m);
+      p.position.set(x, y, z); p.rotation.set(rx || 0, ry || 0, 0);
+      es.add(p); return p;
+    };
+    mk(0xfff5e6, 7, 3.2, 0, 5.5, -2.5, 0, 1.05, 1.15); // top-front key softbox
+    mk(0xe8d5b0, 5, 4, -6.5, 2.2, 1.2, Math.PI / 2 + 0.4, 0, 0.9); // left warm panel
+    mk(0xd4a853, 3.5, 3, 6.5, 2.4, -1.5, -Math.PI / 2 - 0.3, 0, 0.75); // right gold panel
+    mk(0xfff8f0, 8, 0.9, 0, 3.4, 6.5, Math.PI, 0, 1.0); // back long strip
+    const bounce = new THREE.Mesh(new THREE.PlaneGeometry(14, 14), new THREE.MeshBasicMaterial({ color: 0x1a1408 }));
+    bounce.rotation.x = -Math.PI / 2; bounce.position.y = -1.6; es.add(bounce);
+    G.pmrem = new THREE.PMREMGenerator(G.renderer);
+    const rt = G.pmrem.fromScene(es, 0, 0.1, 60);
+    G.env = rt.texture;
+    G.scene.environment = G.env;
+  } catch (e) { errs.push("env: " + e.message); }
+
+  G.hemi = new THREE.HemisphereLight(0xfff5e6, 0x0a0806, 0.4);
+  G.scene.add(G.hemi);
+  G.keyL = new THREE.DirectionalLight(0xfff5e6, 2.6);
+  G.keyL.position.set(5, 8, 6); G.scene.add(G.keyL);
+  G.rimL = new THREE.DirectionalLight(0xd4a853, 1.8);
+  G.rimL.position.set(-7, 3, -6); G.scene.add(G.rimL);
+  G.fillL = new THREE.DirectionalLight(0xe8c97a, 0.5);
+  G.fillL.position.set(2, 2, 8); G.scene.add(G.fillL);
+}
+
+function floorAndDust() {
+  const dark = state.theme !== "light";
+  G.floor = new THREE.Mesh(
+    new THREE.CircleGeometry(14, 64),
+    new THREE.MeshStandardMaterial({ color: dark ? 0x0a0a0a : 0xe8e4dc, roughness: 0.15, metalness: 0.6, envMapIntensity: 1.2 })
+  );
+  G.floor.rotation.x = -Math.PI / 2; G.floor.position.y = 0;
+  G.scene.add(G.floor);
+  G.grid = new THREE.GridHelper(28, 56, dark ? 0x2a3140 : 0xb7bfc9, dark ? 0x1b212c : 0xcfd6de);
+  G.grid.position.y = 0.012;
+  try {
+    G.grid.material.transparent = true; G.grid.material.opacity = dark ? 0.16 : 0.35;
+  } catch (e) { }
+  G.scene.add(G.grid);
+
+  // blob contact shadow
+  const cv = document.createElement("canvas"); cv.width = 256; cv.height = 256;
+  const cx = cv.getContext("2d");
+  const gr = cx.createRadialGradient(128, 128, 8, 128, 128, 126);
+  gr.addColorStop(0, "rgba(3,5,8,0.72)"); gr.addColorStop(0.55, "rgba(3,5,8,0.34)"); gr.addColorStop(1, "rgba(3,5,8,0)");
+  cx.fillStyle = gr; cx.fillRect(0, 0, 256, 256);
+  const tex = new THREE.CanvasTexture(cv);
+  G.blob = new THREE.Mesh(
+    new THREE.PlaneGeometry(4.4, 6.6),
+    new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, opacity: 0.9 })
+  );
+  G.blob.rotation.x = -Math.PI / 2; G.blob.position.y = 0.02;
+  G.rig.add(G.blob);
+
+  // studio dust
+  const N = 240, pos = new Float32Array(N * 3), speeds = [];
+  for (let i = 0; i < N; i++) {
+    pos[i * 3] = (Math.random() - 0.5) * 16;
+    pos[i * 3 + 1] = Math.random() * 7;
+    pos[i * 3 + 2] = (Math.random() - 0.5) * 14;
+    speeds.push(0.10 + Math.random() * 0.22);
+  }
+  const g2 = new THREE.BufferGeometry();
+  g2.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+  G.dust = new THREE.Points(g2, new THREE.PointsMaterial({
+    color: dark ? 0xaebacc : 0x7d8797, size: 0.038, transparent: true, opacity: 0.5,
+    blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true
+  }));
+  G.dust.userData.speeds = speeds;
+  G.scene.add(G.dust);
+}
+
+function applyThemeToScene() {
+  if (!G.ready || !G.scene) { return; }
+  const dark = state.theme !== "light";
+  try {
+    const c = new THREE.Color(dark ? 0x0a0c0f : 0xeef0f3);
+    G.scene.background = c;
+    G.scene.fog = new THREE.Fog(c, 15, 34);
+    if (G.floor) G.floor.material.color = new THREE.Color(dark ? 0x0a0a0a : 0xe8e4dc);
+    if (G.grid) { G.grid.material.opacity = dark ? 0.16 : 0.35; }
+    if (G.hemi) G.hemi.intensity = dark ? 0.55 : 0.9;
+    if (G.keyL) G.keyL.intensity = dark ? 2.1 : 2.45;
+    if (G.rimL) G.rimL.intensity = dark ? 1.55 : 1.15;
+    if (G.dust) G.dust.material.color = new THREE.Color(dark ? 0xaebacc : 0x6f7d92);
+  } catch (e) { errs.push("theme:" + e.message); }
+}
+
+function onResize() {
+  refreshEnv();
+  if (!G.ready) return;
+  try {
+    G.renderer.setPixelRatio(ENV.dpr);
+    G.renderer.setSize(ENV.w, ENV.h, false);
+    G.cam.aspect = ENV.w / Math.max(1, ENV.h);
+    G.cam.updateProjectionMatrix();
+  } catch (e) { errs.push("resize:" + e.message); }
+}
+
+/* input: drag/pinch/parallax ---------------------------------------- */
+function bindInput() {
+  if (G.inputBound) return;
+  G.inputBound = true;
+  const zone = $("#dragzone");
+  const down = new Map(); let pinchD0 = 0, pinchDist0 = 0;
+  const localGet = (e) => {
+    const r = zone.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  };
+  if (zone) {
+    zone.addEventListener("pointerdown", (e) => {
+      G._dragging = true;
+      down.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      try { zone.setPointerCapture(e.pointerId); } catch (e2) { }
+      zone.classList.add("grab");
+      if (down.size === 2) {
+        const a = Array.from(down.values());
+        pinchD0 = Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y);
+        pinchDist0 = view.distT;
+      }
+    }, { passive: true });
+    zone.addEventListener("pointermove", (e) => {
+      if (!down.has(e.pointerId)) return;
+      const prev = down.get(e.pointerId);
+      down.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (down.size === 1) {
+        const dx = e.clientX - prev.x, dy = e.clientY - prev.y;
+        view.ryT -= dx * 0.0042;
+        view.rxT = clamp(view.rxT + dy * 0.0016, -0.34, 0.42);
+      } else if (down.size === 2) {
+        const a = Array.from(down.values());
+        const d = Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y);
+        if (pinchD0 > 0) view.distT = clamp(pinchDist0 * (pinchD0 / Math.max(40, d)), 5.4, 13.5);
+      }
+    }, { passive: true });
+    const up = (e) => {
+      down.delete(e.pointerId);
+      if (!down.size) { zone.classList.remove("grab"); G._dragging = false; }
+    };
+    zone.addEventListener("pointerup", up, { passive: true });
+    zone.addEventListener("pointercancel", up, { passive: true });
+    zone.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      view.distT = clamp(view.distT + e.deltaY * 0.004, 5.4, 13.5);
+    }, { passive: false });
+  }
+  if (ENV.fine) {
+    document.addEventListener("mousemove", (e) => {
+      view.pxT = (e.clientX / Math.max(1, ENV.w) - 0.5) * 0.16;
+      view.pyT = (e.clientY / Math.max(1, ENV.h) - 0.5) * 0.07;
+    }, { passive: true });
+  }
+}
+
+/* main loop ---------------------------------------------------------- */
+function frame(dt) {
+  try {
+    scrollLogic();
+    navSolidCheck();
+    advance(dt);
+    G.renderer.render(G.scene, G.cam);
+  } catch (e) {
+    errs.push("frame:" + e.message);
+    try { cancelAnimationFrame(G.raf); } catch (e2) { }
+    G.raf = 0;
+    if (tickIv) { clearInterval(tickIv); tickIv = 0; }
+  }
+}
+function loop() {
+  if (!G.ready) { G.raf = 0; return; }
+  G.raf = requestAnimationFrame(loop);
+  const now = Date.now();
+  let dt = (now - G.last) / 1000;
+  G.last = now;
+  if (!isFinite(dt) || dt <= 0) dt = 0.016;
+  dt = clamp(dt, 0.0005, 0.05);
+  frame(dt);
+}
+/* rAF-starvation fallback: if the compositor suspends rAF (occluded tab,
+   degraded GPU), keep the studio ticking on Date.now instead. */
+let tickIv = 0;
+function armTicker() {
+  if (tickIv) clearInterval(tickIv);
+  tickIv = setInterval(() => {
+    if (!G.ready) { clearInterval(tickIv); tickIv = 0; return; }
+    if (Date.now() - G.last > 118) {
+      G.last = Date.now();
+      frame(0.033);
+    }
+  }, 58);
+}
+function advance(dt) {
+  const kDamp = 1 - Math.pow(0.0016, dt);
+  view.ry = lerp(view.ry, view.ryT, kDamp);
+  view.rx = lerp(view.rx, view.rxT, kDamp);
+  view.pxS = lerp(view.pxS, view.pxT, kDamp);
+  view.pyS = lerp(view.pyS, view.pyT, kDamp);
+  G.spin.rotation.y = view.ry;
+  G.spin.rotation.x = clamp(view.rx, -0.6, 0.6);
+  // slow auto-rotate when idle
+  if (!G._dragging) {
+    view.ryT += dt * 0.12;
+  }
+  if (gltfModel) {
+    gltfModel.position.y = (gltfModel.userData.homeY || 0) + Math.sin(Date.now() * 0.0022) * 0.05;
+  }
+  const cx = G.cam.position;
+  cx.set(view.pxS, 1.38 + view.pyS, view.dist);
+  G.cam.lookAt(view.pxS * 0.4, 0.52, 0);
+  view.dist = lerp(view.dist, view.distT, kDamp);
+  G.rig.position.y += ((view.yT) - G.rig.position.y) * kDamp;
+  G.rig.position.x += ((view.xT) - G.rig.position.x) * kDamp;
+  if (G.dust) {
+    const arr = G.dust.geometry.attributes.position, sp = G.dust.userData.speeds;
+    for (let i = 0, n = arr.count; i < n; i++) {
+      let y = arr.getY(i) + sp[i] * dt;
+      if (y > 7.2) y = 0.05;
+      arr.setY(i, y);
+    }
+    arr.needsUpdate = true;
+    G.dust.rotation.y = view.pxS * 0.25;
+  }
+}
+
+function disposeThree() {
+  try {
+    if (G.raf) { cancelAnimationFrame(G.raf); G.raf = 0; }
+    if (G.blob && G.blob.material && G.blob.material.map) G.blob.material.map.dispose();
+    if (G.scene) {
+      G.scene.traverse((o) => {
+        if (o.geometry) o.geometry.dispose();
+        if (o.material) {
+          const ms = Array.isArray(o.material) ? o.material : [o.material];
+          ms.forEach((m) => m.dispose());
+        }
+      });
+    }
+    if (G.env) { try { G.env.dispose(); } catch (e) { } G.env = null; }
+    if (G.pmrem) { try { G.pmrem.dispose(); } catch (e) { } G.pmrem = null; }
+  } catch (e) { errs.push("dispose:" + e.message); }
+  if (tickIv) { clearInterval(tickIv); tickIv = 0; }
+  G = { ready: false, raf: 0, last: 0, inputBound: false };
+  gltfModel = null;
+}
+function rebuildAfterLoss() {
+  disposeThree();
+  view.ry = view.ryT = -0.62; view.rx = view.rxT = -0.02; view.dist = view.distT = 8.6; view.xT = 0; view.yT = -0.62;
+  if (initThree()) {
+    loadGLB();
+  }
+}
+
+/* 08 · GLB loader (BMW M5 E34) ---------------------------------------- */
+let gltfModel = null, explodeV = 0;
+
+function loadGLB() {
+  if (gltfModel && gltfModel.parent) {
+    gltfModel.parent.remove(gltfModel);
+    gltfModel.traverse((o) => {
+      if (o.geometry) o.geometry.dispose();
+      if (o.material) { const ms = Array.isArray(o.material) ? o.material : [o.material]; ms.forEach((m) => m.dispose()); }
+    });
+    gltfModel = null;
+  }
+  // Disable ImageBitmapLoader (uses blob URLs blocked by CSP) — force TextureLoader
+  const origCIB = window.createImageBitmap;
+  window.createImageBitmap = undefined;
+  const loader = new GLTFLoader();
+  loader.load("bmw_m5_e34.glb", (gltf) => {
+    window.createImageBitmap = origCIB;
+    const root = gltf.scene;
+    const box = new THREE.Box3().setFromObject(root);
+    const center = box.getCenter(new THREE.Vector3());
+    const size = box.getSize(new THREE.Vector3());
+    const maxDim = Math.max(size.x, size.y, size.z);
+    const scale = maxDim > 0 ? 4.5 / maxDim : 1;
+    root.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
+    root.scale.set(scale, scale, scale);
+    root.rotation.y = Math.PI;
+    root.traverse((o) => {
+      if (o.isMesh) {
+        o.castShadow = true;
+        o.receiveShadow = true;
+        const mats = Array.isArray(o.material) ? o.material : [o.material];
+        mats.forEach((m) => {
+          if (m && m.color) {
+            const nm = (m.name || "").toUpperCase();
+            if (nm.includes("PAINT") || nm.includes("CAR_PAINT") || nm.includes("BODY") || nm.includes("EXTERIOR")) {
+              m.userData.tintable = true;
+            }
+          }
+        });
+      }
+    });
+    G.spin.add(root);
+    gltfModel = root;
+    gltfModel.userData.homeY = root.position.y;
+    applyPaintAll();
+    applyCfgLive();
+  }, undefined, (e) => {
+    window.createImageBitmap = origCIB;
+    errs.push("gltf:" + (e && e.message ? e.message : (e && e.type ? e.type : String(e))));
+    console.error("GLTF load error:", e);
+    document.body.classList.add("no-webgl");
+    toast(t("toastWebgl"), "warn");
+  });
+}
+
+function applyPaintAll() {
+  if (!gltfModel) return;
+  const p = paintById(state.cfg.paint) || PAINTS[0];
+  gltfModel.traverse((o) => {
+    if (o.isMesh && o.material) {
+      const ms = Array.isArray(o.material) ? o.material : [o.material];
+      ms.forEach((m) => {
+        if (m && m.userData && m.userData.tintable && m.color) {
+          m.color.set(p.hex);
+        }
+      });
+    }
+  });
+}
+
+function applyRoofLive() {
+  // GLB has no swappable roof parts — roof selection updates price/fingerprint only
+}
+
+function applyCfgLive(changed) {
+  if (!G.ready) return;
+  if (changed === "paint" || changed == null) applyPaintAll();
+  if (changed === "wheels" || changed === "roof" || changed === "trim" || changed == null) {
+    // GLB variants are defined by the loaded model; selection updates price + config key
+  }
+}
+
+function applyExplode(v) {
+  explodeV = clamp(v, 0, 1);
+  if (gltfModel) {
+    gltfModel.position.y = (gltfModel.userData.homeY || 0) + Math.sin(Date.now() * 0.0022) * 0.05 + explodeV * 1.1;
+  }
+}
+
+function disposeObjDeep(root) {
+  root.traverse((o) => {
+    if (o.geometry) o.geometry.dispose();
+    if (o.material) { const ms = Array.isArray(o.material) ? o.material : [o.material]; ms.forEach((m) => m.dispose()); }
+  });
+}
+
+/* 09 · scroll choreography (rAF-integrated, no gsap needed) ------------- */
+const V = { x: 0, ry: -0.62, rx: -0.02, dist: 8.6, y: -0.62 };
+function applyView() {
+  view.ryT = V.ry; view.rxT = V.rx; view.distT = V.dist;
+  view.xT = V.x; view.yT = V.y;
+}
+const POSES = [
+  { id: "hero",         x: 0.95, ry: -0.55, rx: -0.02, dist: 8.3, y: -0.62 },
+  { id: "story",        x: 0,    ry: 2.9,   rx: -0.3,  dist: 6.9, y: -0.35 },
+  { id: "collection",   x: -1.05,ry: 0.55,  rx: -0.02, dist: 8.9, y: -0.6 },
+  { id: "configurator", x: -0.9, ry: 0.35,  rx: 0.0,   dist: 8.3, y: -0.66 },
+  { id: "performance",  x: 0.6,  ry: 4.9,   rx: -0.08, dist: 9.0, y: -0.6 },
+  { id: "engineering",  x: 0.8,  ry: 5.7,   rx: -0.95, dist: 8.6, y: -0.45 },
+  { id: "showrooms",    x: -0.8, ry: 6.9,   rx: -0.05, dist: 9.2, y: -0.6 },
+  { id: "newsletter",   x: 0,    ry: 7.45,  rx: -0.02, dist: 10.2, y: -0.5 }
+];
+let cKeys = [];
+function layoutKeys() {
+  const sy0 = document.documentElement.scrollHeight - window.innerHeight;
+  cKeys = POSES.map((p, i) => {
+    const sec = document.getElementById(p.id === "story" ? "story" : p.id === "collection" ? "collection" : p.id === "configurator" ? "configurator" : p.id === "performance" ? "performance" : p.id === "engineering" ? "engineering" : p.id === "showrooms" ? "showrooms" : p.id === "newsletter" ? "newsletter" : "hero");
+    const top = sec ? sec.offsetTop : i * 800;
+    const enter = sec ? top - window.innerHeight * 0.85 : i * 700;
+    const settle = sec ? (p.id === "story" ? top + sec.offsetHeight - window.innerHeight : top + window.innerHeight * 0.15) : i * 700 + 500;
+    return { a: enter, b: settle, i: i };
+  });
+  void sy0;
+}
+function mixPose(i, p) {
+  const A = POSES[Math.max(0, i - 1)] || POSES[0];
+  const B = POSES[i] || POSES[0];
+  V.x = lerp(A.x, B.x, p); V.ry = lerp(A.ry, B.ry, p); V.rx = lerp(A.rx, B.rx, p);
+  V.dist = lerp(A.dist, B.dist, p); V.y = lerp(A.y, B.y, p);
+}
+let lastRail = 0, lastStep = -1;
+function scrollLogic() {
+  const sc = window.scrollY || 0;
+  if (!cKeys.length) layoutKeys();
+  // find current segment
+  let idx = 0;
+  for (let i = 0; i < cKeys.length; i++) if (sc >= cKeys[i].a - 1) idx = i;
+  if (sc < (cKeys[0] ? cKeys[0].a : 0)) { V.x = POSES[0].x; V.ry = POSES[0].ry; V.rx = POSES[0].rx; V.dist = POSES[0].dist; V.y = POSES[0].y; }
+  else {
+    const k = cKeys[idx];
+    const span = Math.max(1, k.b - k.a);
+    mixPose(k.i, clamp((sc - k.a) / span, 0, 1));
+  }
+  applyView();
+  // story extras
+  const sTop = $("#story");
+  if (sTop) {
+    const a = sTop.offsetTop - window.innerHeight, b = sTop.offsetTop + sTop.offsetHeight - window.innerHeight;
+    const p = clamp((sc - a) / Math.max(1, b - a), 0, 1);
+    applyExplode(clamp((p - 0.14) / 0.6, 0, 1));
+    const q = clamp(Math.floor(p * 4), 0, 3);
+    if (q !== lastStep) {
+      lastStep = q;
+      $$(".story-step").forEach((n) => { n.hidden = n.getAttribute("data-step") !== String(q); });
+      const dots = $$("#rail .rail-dot");
+      dots.forEach((d, i) => d.classList.toggle("on", i === q));
+      void lastRail;
+    }
+    const th = [0.16, 0.34, 0.52, 0.7];
+    $$(".co").forEach((n, i) => n.classList.toggle("in", p > th[i]));
+  }
+}
+function smoothTo(y) {
+  if (ENV.reduce) { window.scrollTo(0, y); return; }
+  const s0 = window.scrollY, dy = y - s0, t0 = Date.now(), dur = clamp(Math.abs(dy) * 0.5, 350, 900);
+  if (G._sm) cancelAnimationFrame(G._sm);
+  const step = () => {
+    const p = clamp((Date.now() - t0) / dur, 0, 1);
+    const e = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+    window.scrollTo(0, s0 + dy * e);
+    if (p < 1) G._sm = requestAnimationFrame(step);
+  };
+  G._sm = requestAnimationFrame(step);
+}
+function scrollSec(id) {
+  const sec = document.getElementById(id);
+  if (!sec) return;
+  layoutKeys();
+  smoothTo(sec.offsetTop + 4);
+}
+
+/* reveals + counters -------------------------------------------------- */
+function initReveals() {
+  if (!("IntersectionObserver" in window)) { $$(".rv").forEach((n) => n.classList.add("in")); return; }
+  const io = new IntersectionObserver((es) => {
+    es.forEach((e2) => { if (e2.isIntersecting) { e2.target.classList.add("in"); io.unobserve(e2.target); } });
+  }, { threshold: 0.12 });
+  $$(".rv").forEach((n) => io.observe(n));
+}
+function animCount(node, to) {
+  const t0 = Date.now(), dur = 850, from = 0;
+  const iv = setInterval(() => {
+    const p = clamp((Date.now() - t0) / dur, 0, 1);
+    const e = 1 - Math.pow(1 - p, 3);
+    node.textContent = String(Math.round(from + (to - from) * e));
+    if (p >= 1) clearInterval(iv);
+  }, 34);
+  return iv;
+}
+function initPerfCounters() {
+  if (!("IntersectionObserver" in window)) { renderPerfCells(true); return; }
+  renderPerfCells(false);
+  const io2 = new IntersectionObserver((es) => {
+    es.forEach((e2) => {
+      if (e2.isIntersecting && !e2.target.userData_counted) {
+        e2.target.userData_counted = true;
+        const b = e2.target.querySelector("b");
+        const to = parseInt(b.getAttribute("data-to") || "0", 10);
+        animCount(b, to);
+        io2.unobserve(e2.target);
+      }
+    });
+  }, { threshold: 0.4 });
+  $$("#perfGrid .perf-cell").forEach((n) => io2.observe(n));
+}
+
+/* 10 · UI: language / theme ------------------------------------------ */
+function applyLang() {
+  document.documentElement.lang = state.lang;
+  document.documentElement.dir = state.lang === "ar" ? "rtl" : "ltr";
+  $$("[data-ix]").forEach((n) => { const v = t(n.getAttribute("data-ix")); if (v != null) n.textContent = v; });
+  $$("[data-ix-ph]").forEach((n) => { const v = t(n.getAttribute("data-ix-ph")); if (v != null) n.setAttribute("placeholder", v); });
+  const lines = $$("#heroTitle .t-in");
+  if (lines.length >= 3) { lines[0].textContent = t("heroT1"); lines[1].textContent = t("heroT2"); lines[2].textContent = t("heroT3"); }
+  const b1 = $("[data-goto]"); if (b1) b1.textContent = t("ctaCfg");
+  const b2 = $("[data-scrollto]"); if (b2) b2.textContent = t("ctaStory");
+  const ls = $("#langSel"); if (ls) ls.value = state.lang;
+  renderCarGrid(); renderCfgGroups(); renderPanel(); renderShowrooms(); renderCartDrawer(); renderPerfCells(true);
+}
+function applyThemeGlobal(th) {
+  state.theme = th;
+  document.documentElement.setAttribute("data-theme", th);
+  savePrefs();
+  applyThemeToScene();
+}
+
+/* 11 · UI: renders ----------------------------------------------------- */
+function miniCarHTML(hex, classExtra) {
+  void classExtra;
+  return '<div class="mini-car"><div class="m-body" style="background:' + hex + '"></div><div class="m-cab"></div><div class="m-w m-w1"></div><div class="m-w m-w2"></div></div>';
+}
+function hex2css(h) {
+  try { return "#" + new THREE.Color(h).getHexString(); } catch (e) { return "#9aa2ab"; }
+}
+function renderCarGrid() {
+  const box = $("#carGrid"); if (!box) return;
+  box.innerHTML = "";
+  MODELS.forEach((m) => {
+    const pc = hex2css(paintById(state.cfg.paint).hex);
+    const spec = [m.specs.range + " km", m.specs.sprint.toFixed(1) + " s", m.specs.top + " km/h", m.specs.power + " kW"];
+    const card = elNew("div", "c-card" + (state.cfg.model === m.id ? " on" : ""));
+    card.setAttribute("data-sel", m.id);
+    card.setAttribute("role", "button");
+    card.setAttribute("tabindex", "0");
+    card.innerHTML =
+      '<span class="c-code">' + esc(m.code) + "</span>" +
+      '<h3 class="c-name">' + esc(m.nm[state.lang] || m.nm.en) + "</h3>" +
+      '<p class="c-tag">' + esc(kindLabel(m) + " — " + (m.blurb[state.lang] || m.blurb.en)) + "</p>" +
+      miniCarHTML(pc) +
+      '<div class="c-specs">' + spec.map((s2) => "<span>" + esc(s2) + "</span>").join("") + "</div>" +
+      '<div class="c-foot"><div class="c-price">' + esc(fmtUSD(m.base)) + "<small>" + esc(t("baseP")) + "</small></div>" +
+      '<button class="c-add" data-act="sel" data-sel="' + esc(m.id) + '">' + esc(t("cardCta")) + "</button></div>";
+    box.appendChild(card);
+  });
+}
+function renderCfgGroups() {
+  const box = $("#cfgGroups"); if (!box) return;
+  const c = state.cfg;
+  const m = modelById(c.model) || MODELS[0];
+  const plus = (n) => n > 0 ? '<i class="plus">' + esc(fmtUSD(n)) + "</i>" : "";
+  const group = (title, inner) => '<div class="cfg-group"><h4>' + esc(title) + '</h4><div class="chips">' + inner + "</div></div>";
+  const paintChips = PAINTS.map((p) =>
+    '<button class="chip' + (c.paint === p.id ? " on" : "") + '" data-kind="paint" data-id="' + esc(p.id) + '" aria-pressed="' + (c.paint === p.id) + '"><span class="sw" style="background:' + esc(p.css) + '"></span>' + esc(p.nm[state.lang] || p.nm.en) + plus(p.price) + "</button>").join("");
+  const wheelChips = WHEELS.map((w) =>
+    '<button class="chip' + (c.wheels === w.id ? " on" : "") + '" data-kind="wheels" data-id="' + esc(w.id) + '" aria-pressed="' + (c.wheels === w.id) + '"><span class="sw" style="background:' + esc(w.css) + '"></span>' + esc(w.nm[state.lang] || w.nm.en) + plus(w.price) + "</button>").join("");
+  const roofChips = roofsFor(m).map((r) =>
+    '<button class="chip' + (c.roof === r.id ? " on" : "") + '" data-kind="roof" data-id="' + esc(r.id) + '" aria-pressed="' + (c.roof === r.id) + '">' + esc(r.nm[state.lang] || r.nm.en) + plus(r.price) + "</button>").join("");
+  const trimChips = TRIMS.map((tr2) =>
+    '<button class="chip' + (c.trim === tr2.id ? " on" : "") + '" data-kind="trim" data-id="' + esc(tr2.id) + '" aria-pressed="' + (c.trim === tr2.id) + '"><span class="sw" style="background:' + esc(tr2.css) + '"></span>' + esc(tr2.nm[state.lang] || tr2.nm.en) + plus(tr2.price) + "</button>").join("");
+  box.innerHTML =
+    group(t("plPaint"), paintChips) + group(t("plWheels"), wheelChips) +
+    group(t("plRoof"), roofChips) + group(t("plTrim"), trimChips);
+}
+function renderPanel() {
+  const box = $("#cfgPanel"); if (!box) return;
+  const c = state.cfg;
+  const m = modelById(c.model) || MODELS[0];
+  const p = paintById(c.paint), w = wheelById(c.wheels), tr2 = trimById(c.trim);
+  const rf = ROOFB[c.roof];
+  const nmL = (o) => esc(o.nm[state.lang] || o.nm.en);
+  const line = (lab, val, fp) => '<div class="cfg-line"><span>' + esc(lab) + '</span><b>' + val + (fp ? '<span class="fp">' + esc(fp) + "</span>" : "") + "</b></div>";
+  box.innerHTML =
+    '<span class="pmodel">' + esc(m.code) + " · " + esc(kindLabel(m)) + "</span>" +
+    '<h4>' + esc(m.nm[state.lang] || m.nm.en) + "</h4>" +
+    line(t("baseP"), '<span class="fp">' + esc(fmtUSD(m.base)) + "</span>") +
+    line(t("plPaint"), esc(p.nm[state.lang] || p.nm.en) + '<span class="fp">' + esc(fmtUSD(p.price)) + "</span>") +
+    line(t("plWheels"), esc(w.nm[state.lang] || w.nm.en) + '<span class="fp">' + esc(fmtUSD(w.price)) + "</span>") +
+    line(t("plRoof"), esc(rf.nm[state.lang] || rf.nm.en) + '<span class="fp">' + esc(fmtUSD(rf.price)) + "</span>") +
+    line(t("plTrim"), esc(tr2.nm[state.lang] || tr2.nm.en) + '<span class="fp">' + esc(fmtUSD(tr2.price)) + "</span>") +
+    '<div class="tot"><span>' + esc(t("totalP")) + "</span><b>" + esc(fmtUSD(priceFor(c))) + "</b></div>" +
+    '<p class="finger">' + esc(t("finger")) + ": <b>" + esc(cfgFingerprint(c)) + "</b></p>" +
+    '<button class="btn btn-p" data-act="add">' + esc(t("addCart")) + "</button>" +
+    '<button class="btn btn-ghost share-b" data-act="share">' + esc(t("share")) + "</button>";
+}
+function renderPerfCells(instant) {
+  const box = $("#perfGrid"); if (!box) return;
+  const m = modelById(state.cfg.model) || MODELS[0];
+  const vals = [
+    { v: m.specs.range, l: "pL1", unit: "km" }, { v: m.specs.sprint, l: "pL2", unit: "s" },
+    { v: m.specs.top, l: "pL3", unit: "km/h" }, { v: m.specs.power, l: "pL4", unit: "kW" }
+  ];
+  box.innerHTML = vals.map((x, i) =>
+    '<div class="perf-cell"><b data-to="' + x.v + '">' + (instant ? String(x.v) : "0") + "</b><span>" + esc(t(x.l)) + "</span></div>"
+  ).join("");
+  if (!instant) {
+    // keep counters counting again on rebuild
+    $$("#perfGrid .perf-cell").forEach((n) => { n.userData_counted = false; });
+  }
+}
+function renderShowrooms() {
+  const box = $("#showGrid"); if (!box) return;
+  box.innerHTML = SHOWROOMS.map((s, i) =>
+    '<div class="sh-card rv rv-d' + ((i % 3) + 1) + '"><b>' + esc(s.city[state.lang] || s.city.en) + "</b><span>" + esc(s.hall[state.lang] || s.hall.en) + "</span><div class='hr'>" + esc(i === 0 ? "SC · 01" : i === 1 ? "SC · 02" : "SC · 01–03") + "</div></div>"
+  ).join("");
+}
+
+/* cart ---------------------------------------------------------------- */
+function cartBadgeUpdate() {
+  const b = $("#cartBadge");
+  const q = state.cart.reduce((s2, it) => s2 + it.q, 0);
+  if (!b) return;
+  b.textContent = String(q);
+  b.classList.toggle("on", q > 0);
+}
+function cartAdd(cfg) {
+  const k = cfgKey(normalizeCfg(cfg));
+  const found = state.cart.filter((it) => it.k === k)[0];
+  if (found) found.q = clamp(found.q + 1, 1, 99);
+  else state.cart.push({ k: k, cfg: normalizeCfg(cfg), q: 1 });
+  saveCart(); cartBadgeUpdate(); renderCartDrawer();
+}
+function cartRemove(k) {
+  state.cart = state.cart.filter((it) => it.k !== k);
+  saveCart(); cartBadgeUpdate(); renderCartDrawer();
+}
+function cartQty(k, d) {
+  const it = state.cart.filter((x) => x.k === k)[0];
+  if (!it) return;
+  it.q = clamp(it.q + d, 1, 99);
+  saveCart(); cartBadgeUpdate(); renderCartDrawer();
+}
+function cartClear() { state.cart = []; saveCart(); cartBadgeUpdate(); renderCartDrawer(); }
+function cartTotalUSD() { return state.cart.reduce((s2, it) => s2 + priceFor(it.cfg) * it.q, 0); }
+function renderCartDrawer() {
+  const d = $("#drawer"); if (!d) return;
+  const it0s = state.cart.map((it) => {
+    const m = modelById(it.cfg.model) || MODELS[0];
+    const p = paintById(it.cfg.paint) || PAINTS[0];
+    const hex = hex2css(p.hex);
+    return '<div class="dr-line"><div class="dot" style="background:' + esc(hex) + ';color:#0a1524">' + esc(m.code) + "</div>" +
+      '<div class="t"><b>' + esc(m.nm[state.lang] || m.nm.en) + " × " + it.q + "</b><span>" +
+      esc([p.nm[state.lang] || p.nm.en, (wheelById(it.cfg.wheels) || WHEELS[0]).nm[state.lang] || "", ROOFB[it.cfg.roof].nm[state.lang] || "", (trimById(it.cfg.trim) || TRIMS[0]).nm[state.lang] || ""].join(" · ")) + "</span>" +
+      '<button class="rm" data-act="rm" data-k="' + esc(it.k) + '">' + esc(t("remove")) + "</button></div>" +
+      '<div><div class="p">' + esc(fmtUSD(priceFor(it.cfg) * it.q)) + "</div>" +
+      '<div style="display:flex;gap:6px;margin-top:6px">' +
+      '<button class="icobtn" style="width:28px;height:26px;border-radius:8px" data-act="qty" data-k="' + esc(it.k) + '" data-d="-1">' + "&#8722;" + "</button>" +
+      '<button class="icobtn" style="width:28px;height:26px;border-radius:8px" data-act="qty" data-k="' + esc(it.k) + '" data-d="1">' + "+" + "</button>" +
+      "</div></div></div>";
+  }).join("");
+  d.innerHTML =
+    '<div class="dr-head"><h3>' + esc(t("cartT")) + '</h3><button class="icobtn x" data-act="closeDrawer" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19"/></svg></button></div>' +
+    '<div class="dr-list">' + (state.cart.length ? it0s : '<p class="dr-empty">' + esc(t("cartEmpty")) + "</p>") + "</div>" +
+    '<div class="dr-foot"><div class="dr-tot"><span>' + esc(t("subT")) + "</span><b>" + esc(fmtUSD(cartTotalUSD())) + "</b></div>" +
+    '<button class="btn btn-p" style="width:100%" data-act="checkout" ' + (state.cart.length ? "" : "disabled") + ">" + esc(t("checkout")) + "</button>" +
+    '<button class="btn btn-ghost" style="width:100%;margin-top:8px" data-act="clear" ' + (state.cart.length ? "" : "disabled") + ">" + esc(t("clear")) + "</button>" +
+    '<p class="dr-note">' + esc(t("payP")) + "</p></div>";
+}
+function openDrawer(o) {
+  const d = $("#drawer"), scr = $("#scrim");
+  d.hidden = false; scr.hidden = false;
+  requestAnimationFrame(() => { d.classList.toggle("open", !!o); scr.classList.toggle("open", !!o); });
+  if (!o) setTimeout(() => { if (!d.classList.contains("open")) { d.hidden = true; scr.hidden = true; } }, 480);
+  d.setAttribute("aria-hidden", o ? "false" : "true");
+}
+function modalOpen(html) {
+  const mo = $("#modal"), scr = $("#scrim");
+  mo.hidden = false; scr.hidden = false;
+  mo.innerHTML = html;
+  requestAnimationFrame(() => { mo.classList.add("open"); scr.classList.add("open"); });
+  mo.setAttribute("aria-hidden", "false");
+}
+function modalClose() {
+  const mo = $("#modal"), scr = $("#scrim");
+  mo.classList.remove("open"); scr.classList.remove("open");
+  setTimeout(() => { if (!mo.classList.contains("open")) { mo.hidden = true; mo.innerHTML = ""; } }, 400);
+}
+function openCheckout() {
+  if (!state.cart.length) { toast(t("cartEmpty"), "warn"); return; }
+  const m = new Map([[t("fName"), ""], [t("fPhone"), ""], [t("kCity"), ""]]);
+  void m;
+  const rows = state.cart.map((it) => {
+    const mm2 = modelById(it.cfg.model) || MODELS[0];
+    return '<div class="cfg-line"><span>' + esc(mm2.code + " · " + it.q + "×") + "</span><b><span class='fp'>" + esc(fmtUSD(priceFor(it.cfg) * it.q)) + "</span></b></div>";
+  }).join("");
+  const html =
+    '<div class="m-box"><div class="m-head"><h3>' + esc(t("modalT")) + '</h3><button class="icobtn x" data-act="closeModal" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19"/></svg></button></div>' +
+    '<p class="m-title">' + esc(t("mTitle")) + "</p>" + rows +
+    '<form id="payForm" novalidate style="margin-top:14px">' +
+    '<div class="f-row"><label style="display:flex;flex-direction:column;gap:6px"><span>' + esc(t("fName")) + '</span><input id="payName" required maxlength="60"></label>' +
+    '<label style="display:flex;flex-direction:column;gap:6px"><span>' + esc(t("fPhone")) + '</span><input id="payPhone" inputmode="tel" maxlength="24"></label></div>' +
+    '<label style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px"><span>' + esc(t("kCity")) + '</span><input id="payCity" maxlength="40"></label>' +
+    '<div class="pay-card"><div class="row1"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5.5" width="19" height="13" rx="2.5"/><path d="M2.5 10h19"/></svg><span>' + esc(t("payT")) + "</span></div><p>" + esc(t("payP")) + "</p>" +
+    '<div class="sim-lane" id="simLane"><i class="wheel"></i><span id="simTxt">' + esc(t("sim1")) + "</span></div></div>" +
+    '<button class="btn btn-p" id="payGo" type="submit" style="width:100%">' + esc(t("payGo")) + "</button>" +
+    "</form></div>";
+  modalOpen(html);
+  const form = $("#payForm");
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = ($("#payName") && $("#payName").value.trim()) || "";
+    if (!name) { ($("#payName") || { focus() { } }).focus(); return; }
+    const go = $("#payGo"); if (go) go.disabled = true;
+    const lane = $("#simLane"); if (lane) lane.classList.add("on");
+    setTimeout(() => { const sx = $("#simTxt"); if (sx) sx.textContent = t("sim2"); }, 950);
+    setTimeout(() => finishOrder(name), 1850);
+  });
+}
+function finishOrder(name) {
+  const total = cartTotalUSD();
+  const id = "CRX-" + String(Math.floor(100000 + Math.random() * 900000));
+  try {
+    const ords = lsGet("orders", []);
+    ords.push({ id: id, totalUSD: total, currency: state.currency, items: state.cart.length, name: name, t: Date.now() });
+    lsSet("orders", ords.slice(-50));
+  } catch (e) { }
+  cartClear();
+  state.lastOrder = { id: id, total: total };
+  const mo = $("#modal");
+  if (mo) {
+    mo.querySelector(".m-box").innerHTML =
+      '<div class="success-view"><div class="ring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5l5 5 10-11"/></svg></div>' +
+      "<h4>" + esc(t("doneT")) + "</h4><p>" + esc(t("doneP")) + "</p>" +
+      '<p class="order-id">#' + esc(id) + "</p>" +
+      '<button class="btn btn-p" data-act="closeModal">' + esc(t("doneBtn")) + "</button></div>";
+  }
+  toast("#" + id, "ok");
+}
+function selectModel(id, silent) {
+  if (!modelById(id)) return;
+  state.cfg = normalizeCfg(Object.assign({}, state.cfg, { model: id }));
+  savePrefs();
+  if (G.ready) {
+    loadGLB();
+  }
+  syncHash();
+  renderPanel(); renderCfgGroups(); renderPerfCells(true); renderCarGrid();
+  if (!silent) toast(t("selT") + ((modelById(id).nm[state.lang]) || "") + " " + modelById(id).code, "ok");
+}
+
+/* events --------------------------------------------------------------- */
+function bindUI() {
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest ? e.target.closest("[data-act],[data-sel],[data-goto],[data-scrollto],[data-sec]") : null;
+    if (!btn) return;
+    const act = btn.getAttribute("data-act");
+    if (btn.hasAttribute("data-goto")) { e.preventDefault(); scrollSec("configurator"); return; }
+    if (btn.hasAttribute("data-scrollto")) { e.preventDefault(); scrollSec(btn.getAttribute("data-scrollto")); return; }
+    if (act === "sel") { selectModel(btn.getAttribute("data-sel"), false); if (ENV.mobile) scrollSec("configurator"); return; }
+    if (act === "add") { cartAdd(state.cfg); toast(t("added"), "ok"); return; }
+    if (act === "share") { copyLink(); return; }
+    if (act === "openCart") { renderCartDrawer(); openDrawer(true); return; }
+    if (act === "closeDrawer") { openDrawer(false); return; }
+    if (act === "checkout") { openDrawer(false); openCheckout(); return; }
+    if (act === "closeModal") { modalClose(); return; }
+    if (act === "clear") { cartClear(); return; }
+    if (act === "rm") { cartRemove(btn.getAttribute("data-k")); return; }
+    if (act === "qty") { cartQty(btn.getAttribute("data-k"), parseInt(btn.getAttribute("data-d") || "1", 10)); return; }
+    if (btn.hasAttribute("data-sel") && !btn.getAttribute("data-act")) { selectModel(btn.getAttribute("data-sel"), false); return; }
+  });
+  document.addEventListener("click", (e) => {
+    const chip = e.target.closest ? e.target.closest(".chip[data-kind]") : null;
+    if (!chip) return;
+    const kind = chip.getAttribute("data-kind"), id = chip.getAttribute("data-id");
+    if (!id) return;
+    const before = cfgKey(state.cfg);
+    state.cfg = normalizeCfg(Object.assign({}, state.cfg, { [kind]: id }));
+    if (cfgKey(state.cfg) === before) { syncHash(); return; }
+    savePrefs();
+    applyCfgLive(kind);
+    if (kind === "paint") renderCarGrid();
+    syncHash();
+    renderPanel(); renderCfgGroups();
+  }, true);
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest ? e.target.closest(".menu a[href^='#']") : null;
+    if (!a) return;
+    e.preventDefault();
+    menuClose();
+    scrollSec((a.getAttribute("href") || "#hero").slice(1));
+  });
+  const cb = $("#cartBtn");
+  if (cb) { cb.setAttribute("data-act", "openCart"); cb.addEventListener("click", () => { renderCartDrawer(); openDrawer(true); }); }
+  const scr = $("#scrim");
+  if (scr) { scr.addEventListener("click", () => { openDrawer(false); modalClose(); menuClose(); }); }
+  const cs = $("#curSel");
+  if (cs) {
+    cs.value = state.currency;
+    cs.addEventListener("change", () => {
+      state.currency = CURS.indexOf(cs.value) >= 0 ? cs.value : "USD";
+      savePrefs();
+      renderPanel(); renderCarGrid(); renderCartDrawer(); renderCfgGroups();
+      toast(t("curC") + state.currency, "ok");
+    });
+  }
+  const ls2 = $("#langSel");
+  if (ls2) ls2.addEventListener("change", () => { state.lang = ls2.value === "ar" ? "ar" : "en"; savePrefs(); applyLang(); toast(state.lang === "ar" ? "العربية" : "English", "ok"); });
+  const tb = $("#themeBtn");
+  if (tb) tb.addEventListener("click", () => { applyThemeGlobal(state.theme === "dark" ? "light" : "dark"); toast(t("themeL"), "ok"); });
+  const bg2 = $("#burger");
+  if (bg2) bg2.addEventListener("click", menuOpen);
+  const mt = $("#menuTheme"); if (mt) mt.addEventListener("click", () => { applyThemeGlobal(state.theme === "dark" ? "light" : "dark"); toast(t("themeL"), "ok"); });
+  const ml = $("#menuLang"); if (ml) ml.addEventListener("click", () => { state.lang = state.lang === "ar" ? "en" : "ar"; savePrefs(); applyLang(); });
+  const mf = $("#nlForm");
+  if (mf) mf.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const inp = $("#nlMail"), note = $("#nlNote");
+    const v2 = inp && inp.value.trim() || "";
+    const ok = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v2);
+    if (ok) {
+      try {
+        const subs = lsGet("subscribers", []);
+        if (subs.indexOf(v2) < 0) subs.push(v2);
+        lsSet("subscribers", subs);
+      } catch (e2) { }
+      if (note) { note.textContent = t("nlOk"); note.style.color = "var(--ok)"; }
+      toast(v2.split("@")[0] + " ✓", "ok");
+      if (inp) inp.value = "";
+    } else {
+      if (note) { note.textContent = t("nlBad"); note.style.color = "var(--err)"; }
+    }
+  });
+  window.addEventListener("resize", () => { onResize(); layoutKeys(); });
+  if (ENV.fine) {
+    document.body.classList.add("has-cursor");
+    const cur = $(".cur"), ring = $(".cur-ring");
+    let cx = -20, cy = -20, rx = -20, ry2 = -20;
+    document.addEventListener("mousemove", (e) => {
+      cx = e.clientX; cy = e.clientY;
+      const hot = !!(e.target.closest && e.target.closest("button,a,.chip,.c-card,.c-add"));
+      document.body.classList.toggle("cur-hot", hot);
+    }, { passive: true });
+    (function moveLoop() {
+      rx += (cx - rx) * 0.22; ry2 += (cy - ry2) * 0.22;
+      if (cur) cur.style.transform = "translate(" + cx + "px," + cy + "px) translate(-50%,-50%)";
+      if (ring) ring.style.transform = "translate(" + rx + "px," + ry2 + "px) translate(-50%,-50%)";
+      requestAnimationFrame(moveLoop);
+    })();
+  }
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest ? e.target.closest(".nav-links a[href^='#'],.foot a[href^='#']") : null;
+    if (!a) return;
+    e.preventDefault();
+    scrollSec((a.getAttribute("href") || "#hero").slice(1));
+  });
+}
+function menuOpen() { const mn = $("#menu"); if (mn) { mn.hidden = false; requestAnimationFrame(() => mn.classList.add("open")); } }
+function menuClose() { const mn = $("#menu"); if (mn) { mn.classList.remove("open"); setTimeout(() => { if (!mn.classList.contains("open")) mn.hidden = true; }, 340); } }
+function copyLink() {
+  const url = location.href;
+  const done = () => toast(t("copied"), "ok");
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(url).then(done, () => fallbackCopy(url, done)); return; }
+  } catch (e) { }
+  fallbackCopy(url, done);
+}
+function fallbackCopy(txt, done) {
+  try {
+    const ta = elNew("textarea"); ta.value = txt; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    document.execCommand("copy"); document.body.removeChild(ta); done();
+  } catch (e) { toast(txt, "warn"); }
+}
+
+function navSolidCheck() {
+  const nav = $("#nav");
+  if (!nav) return;
+  const on = (window.scrollY || 0) > 34;
+  nav.classList.toggle("solid", on);
+}
+
+/* 12 · preloader + boot ------------------------------------------------- */
+function preloaderRun(onDone) {
+  const pl = $("#pl"), bar = $("#plBar"), num = $("#plNum");
+  if (!pl) { onDone(); return; }
+  if (ENV.reduce) { pl.classList.add("pl-out"); setTimeout(() => { pl.remove(); onDone(); }, 260); return; }
+  const t0 = Date.now(); let p = 0, lastTick = Date.now();
+  const iv = setInterval(() => {
+    const now = Date.now();
+    const dSec = Math.max(0, now - lastTick) / 1000; lastTick = now;
+    const bootDone = !!window.__CARX_READY__;
+    const cap = bootDone ? 100 : 88;
+    p = Math.min(cap, p + (p < 55 ? 46 : 13) * dSec);
+    if (bar) bar.style.width = p.toFixed(1) + "%";
+    if (num) num.textContent = Math.round(p) + "%";
+    if (p >= 100 || now - t0 > 4800) {
+      clearInterval(iv);
+      p = 100; if (bar) bar.style.width = "100%"; if (num) num.textContent = "100%";
+      pl.classList.add("pl-out");
+      setTimeout(() => { if (pl.parentNode) pl.parentNode.removeChild(pl); onDone(); }, 780);
+    }
+  }, 40);
+}
+
+function renderAllPrices() { renderPanel(); renderCarGrid(); renderCartDrawer(); renderCfgGroups(); }
+
+function boot() {
+  try {
+    refreshEnv();
+    loadState();
+    const fromHash = applyHash();
+    void fromHash;
+    applyThemeGlobal(state.theme);
+    applyLang();
+    const okGL = initThree();
+    if (okGL) {
+      loadGLB();
+    } else {
+      document.body.classList.add("no-webgl");
+      const fb = $("#fbCar"); if (fb) fb.hidden = false;
+      const fb2 = $("#cfgFallback"); if (fb2) fb2.hidden = false;
+      toast(t("toastWebgl"), "warn");
+    }
+    bindUI();
+    renderCarGrid(); renderCfgGroups(); renderPanel(); renderShowrooms(); renderPerfCells(true); renderCartDrawer(); cartBadgeUpdate();
+    initReveals();
+    initPerfCounters();
+    layoutKeys();
+    if (!G.ready) {
+      const static3 = function () { scrollLogic(); navSolidCheck(); setTimeout(static3, 120); };
+      static3();
+    }
+    syncHash();
+    refreshRates();
+    // hero reveal
+    setTimeout(() => { const ht = $("#heroTitle"); if (ht) ht.classList.add("revealed"); }, 260);
+    window.__CARX_READY__ = true;
+  } catch (e) {
+    errs.push("boot:" + (e && e.message));
+    window.__CARX_READY__ = true;
+  }
+}
+
+/* debug API -------------------------------------------------------------- */
+window.CARX = {
+  version: "1.0.0",
+  get state() { return state; },
+  three: () => ({ ok: G.ready, scene: G.scene, cam: G.cam }),
+  car: () => gltfModel,
+  view: () => view,
+  errors: () => errs.slice(),
+  setCfg: function (patch) {
+    const key0 = cfgKey(state.cfg);
+    state.cfg = normalizeCfg(Object.assign({}, state.cfg, patch));
+    if (G.ready) { loadGLB(); applyCfgLive(); applyExplode(0); }
+    syncHash(); renderPanel(); renderCfgGroups(); renderPerfCells(true); renderCarGrid();
+    void key0;
+  },
+  explode: function (v) { applyExplode(v); },
+  select: function (id) { selectModel(id, true); }
+};
+
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { boot(); preloaderRun(function () { }); });
+else { boot(); preloaderRun(function () { }); }
+</script>
+</body>
+</html>

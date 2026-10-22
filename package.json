@@ -1,0 +1,29 @@
+{
+  "name": "carx-atelier",
+  "version": "2.0.0",
+  "description": "CARX ATELIER - interactive 3D car configurator studio (BMW M5 E34)",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "seed": "node server/seed.js",
+    "optimize-assets": "node scripts/optimize-glb.mjs",
+    "smoke": "node scripts/smoke.mjs"
+  },
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "express": "^5.3.0",
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "@gltf-transform/cli": "^4.5.1",
+    "draco3dgltf": "^1.5.9",
+    "sharp": "^0.35.5"
+  },
+  "test": "node scripts/smoke.mjs",
+  "engines": {
+    "node": ">=20"
+  },
+  "private": true
+}

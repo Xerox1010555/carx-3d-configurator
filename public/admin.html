@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'self'">
+<title>CARX — Admin</title>
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/css/studio.css">
+<link rel="stylesheet" href="/css/features.css">
+</head>
+<body>
+<main class="admin-wrap" id="app">
+  <!-- login -->
+  <section id="loginView">
+    <h1>CAR<b style="color:var(--accent)">X</b> — Admin</h1>
+    <p class="sub">Studio console: orders, leads, pricing.</p>
+    <div class="admin-card" style="max-width:420px">
+      <h3>Sign in</h3>
+      <form class="admin-form" id="loginForm">
+        <label>E-mail <input type="email" id="loginEmail" autocomplete="username" required></label>
+        <label>Password <input type="password" id="loginPw" autocomplete="current-password" required></label>
+        <button class="btn btn-p" type="submit">Enter</button>
+      </form>
+      <p class="nl-note" id="loginNote"></p>
+    </div>
+  </section>
+
+  <!-- console -->
+  <section id="consoleView" hidden>
+    <h1>CAR<b style="color:var(--accent)">X</b> — Admin</h1>
+    <p class="sub"><span id="whoami"></span> · <a href="/" style="color:var(--accent)">← back to studio</a> · <a href="#" id="logout" style="color:var(--muted)">sign out</a></p>
+
+    <div class="admin-card">
+      <h3>Stats (30 days)</h3>
+      <div class="admin-stats" id="statsBox"></div>
+    </div>
+
+    <div class="admin-card">
+      <h3>Orders</h3>
+      <div style="overflow-x:auto"><table class="admin-table" id="ordersTable"></table></div>
+    </div>
+
+    <div class="admin-card">
+      <h3>Leads</h3>
+      <div style="overflow-x:auto"><table class="admin-table" id="leadsTable"></table></div>
+    </div>
+
+    <div class="admin-card">
+      <h3>Option pricing</h3>
+      <div style="overflow-x:auto"><table class="admin-table" id="priceTable"></table></div>
+    </div>
+  </section>
+</main>
+<script type="module" src="/js/admin.js"></script>
+</body>
+</html>

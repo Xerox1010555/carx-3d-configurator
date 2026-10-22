@@ -1,0 +1,17 @@
+{
+  "name": "CARX ATELIER — BMW M5 E34 Studio",
+  "short_name": "CARX",
+  "description": "Interactive 3D configurator studio for the BMW M5 E34.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#060809",
+  "theme_color": "#060809",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

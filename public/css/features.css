@@ -1,0 +1,92 @@
+/* ============ CARX ATELIER — feature styles (garage, screenshot, kiosk, admin, misc) ============ */
+
+/* RTL support: logical properties handle most of it; explicit fixes here */
+[dir="rtl"] .hero-hint { right: auto; left: clamp(24px, 5vw, 66px) }
+[dir="rtl"] .rail { right: auto; left: clamp(18px, 4vw, 50px) }
+[dir="rtl"] .story-copy { left: auto; right: clamp(20px, 6vw, 72px) }
+[dir="rtl"] .fb-car { left: auto; right: 52% }
+[dir="rtl"] .dragzone { inset: 30vh 55% 0 0 }
+
+/* garage modal table */
+.g-table { display: flex; flex-direction: column; gap: 10px; margin: 12px 0 6px }
+.g-row { display: grid; grid-template-columns: 34px 1fr auto; gap: 12px; align-items: center;
+  border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px }
+.g-swatch { width: 34px; height: 34px; border-radius: 9px; border: 1px solid var(--line2) }
+.g-meta b { display: block; font-size: 13.5px }
+.g-meta span { font: 500 11px/1.5 var(--mono); color: var(--muted) }
+.g-acts { display: flex; gap: 6px }
+.g-acts .icobtn { width: 32px; height: 32px; border-radius: 9px }
+.g-empty { color: var(--muted); font-size: 14px; padding: 14px 0 }
+.g-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px }
+.g-compare .g-row { grid-template-columns: 1fr; align-items: start }
+
+/* order lookup in checkout success */
+.order-lookup { display: flex; gap: 8px; margin-top: 10px }
+.order-lookup input { flex: 1; border: 1px solid var(--line); background: var(--card2); color: var(--fg);
+  border-radius: 10px; padding: 10px 12px; font: 600 12px/1 var(--mono); letter-spacing: .08em }
+
+/* whatsapp / lead CTA inside configurator panel */
+.lead-cta { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap }
+.lead-cta input { flex: 1; min-width: 140px; border: 1px solid var(--line); background: var(--card2);
+  color: var(--fg); border-radius: 10px; padding: 10px 12px; font-size: 13px }
+
+/* option badges */
+.chip .live-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--ok); margin-inline-start: 6px; vertical-align: middle }
+.cfg-note { font: 500 11px/1.5 var(--mono); color: var(--dim); margin-top: 10px }
+
+/* mobile burger visibility handled in studio.css; ensure new icobtns wrap on mobile */
+@media (max-width: 720px) {
+  .nav-act { gap: 6px }
+  .nav-act .icobtn, .cur-sel { height: 34px; width: 34px; padding: 0 6px }
+  .nav-act .lang-b { width: auto }
+  #langSel { width: 54px }
+  #curSel { width: 62px }
+}
+
+/* kiosk mode: hide chrome, auto hints */
+body.kiosk .nav, body.kiosk .menu, body.kiosk .foot, body.kiosk .hero-hint,
+body.kiosk .cur, body.kiosk .cur-ring { display: none !important }
+body.kiosk main { opacity: 1 }
+.kiosk-exit { position: fixed; bottom: 18px; inset-inline-end: 18px; z-index: 95;
+  font: 600 10px/1 var(--mono); letter-spacing: .3em; color: var(--dim); text-transform: uppercase }
+body.kiosk .kiosk-exit { display: block }
+
+/* screenshot flash */
+.flash { position: fixed; inset: 0; background: #fff; z-index: 300; pointer-events: none;
+  animation: flashfade .5s ease forwards }
+@keyframes flashfade { from { opacity: .85 } to { opacity: 0 } }
+
+/* offline banner */
+.offline-banner { position: fixed; top: calc(var(--nav-h) + 8px); left: 50%; transform: translateX(-50%);
+  z-index: 96; background: var(--card); border: 1px solid var(--warn); color: var(--fg2);
+  border-radius: 999px; padding: 8px 18px; font: 600 11px/1 var(--mono); letter-spacing: .12em }
+
+/* admin console */
+.admin-wrap { max-width: 1080px; margin: 0 auto; padding: 40px clamp(16px, 4vw, 40px) 90px }
+.admin-wrap h1 { font-size: clamp(26px, 4vw, 40px); margin: 0 0 6px; letter-spacing: -.01em }
+.admin-wrap .sub { color: var(--muted); margin: 0 0 26px; font-size: 14px }
+.admin-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r);
+  padding: 22px; margin-bottom: 18px }
+.admin-card h3 { margin: 0 0 14px; font-size: 15px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--fg2); font-family: var(--mono) }
+.admin-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px }
+.admin-stat { background: var(--card2); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px }
+.admin-stat b { display: block; font: 700 22px/1.2 var(--mono) }
+.admin-stat span { font: 500 10px/1 var(--mono); letter-spacing: .22em; text-transform: uppercase; color: var(--dim) }
+.admin-table { width: 100%; border-collapse: collapse; font-size: 13px }
+.admin-table th { text-align: start; font: 600 10px/1 var(--mono); letter-spacing: .18em;
+  text-transform: uppercase; color: var(--dim); padding: 8px 10px; border-bottom: 1px solid var(--line2) }
+.admin-table td { padding: 9px 10px; border-bottom: 1px solid var(--line) }
+.admin-table tr:hover td { background: var(--card2) }
+.admin-form { display: flex; gap: 10px; flex-wrap: wrap; align-items: end }
+.admin-form label { display: flex; flex-direction: column; gap: 6px; font: 600 10px/1 var(--mono);
+  letter-spacing: .16em; text-transform: uppercase; color: var(--dim) }
+.admin-form input, .admin-form select { border: 1px solid var(--line); background: var(--card2);
+  color: var(--fg); border-radius: 10px; padding: 10px 12px; font-size: 13.5px; min-width: 160px }
+.badge-status { display: inline-block; padding: 3px 10px; border-radius: 999px; font: 600 10px/1.5 var(--mono);
+  letter-spacing: .1em; border: 1px solid var(--line2) }
+.badge-status.demo { color: var(--warn) } .badge-status.paid { color: var(--ok) }
+.badge-status.fulfilled { color: var(--accent) } .badge-status.cancelled { color: var(--err) }
+.price-edit { width: 90px; border: 1px solid var(--line); background: var(--card2); color: var(--fg);
+  border-radius: 8px; padding: 6px 8px; font: 600 12px var(--mono) }
