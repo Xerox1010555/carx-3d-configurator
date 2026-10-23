@@ -64,6 +64,8 @@ app.use(express.static(PUBLIC_DIR, {
   setHeaders(res, filePath) {
     if (filePath.includes(`${path.sep}vendor${path.sep}`) || filePath.endsWith(".glb")) {
       res.set("Cache-Control", "public, max-age=31536000, immutable");
+    } else if (filePath.endsWith(".woff2")) {
+      res.set("Cache-Control", "public, max-age=604800");   // 7d — fonts are stable per family version
     } else if (/\.(js|css)$/.test(filePath)) {
       res.set("Cache-Control", "public, max-age=300");
     }

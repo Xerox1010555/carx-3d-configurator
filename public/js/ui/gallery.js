@@ -1,15 +1,17 @@
-/** CARX — the showroom gallery: 360° turntable + six measured views (exterior + interior). */
+/** CARX — the showroom gallery: EXTERIOR/INTERIOR preview modes, 360° turntable,
+    measured exterior views + measured cabin views (cockpit + rear bench). */
 
-import { $, elNew, esc } from "../core/utils.js";
+import { $, esc } from "../core/utils.js";
 import { t } from "../core/i18n.js";
 import { car } from "../three/car.js";
 import { view, G, angleDeg } from "../three/stage.js";
-import { setPoseOverride, poseFor } from "../three/choreography.js";
+import { setPoseOverride } from "../three/choreography.js";
 import { track } from "../analytics.js";
 
 /* Views are measured from the loaded model (car.anchors) so the camera always
    frames the real front / tail / wheel / cabin — never hard-coded guesses.
-   The nose points to −Z: ry π sees the face, ry 0 sees the tail, ry ±π/2 the side. */
+   The nose points to −Z: ry π sees the face, ry 0 sees the tail, ry ±π/2 the side.
+   Every view carries a mode: "ext" (outside the glass) or "int" (inside the cabin). */
 function buildViews() {
   const a = car.anchors;
   if (!a) return [];
@@ -20,37 +22,43 @@ function buildViews() {
   const wheelRy = Math.acos(Math.max(-1, Math.min(1, a.frontWheelZ / 2.6))); // camera beside the front wheel
   return [
     {
-      id: "front", labelKey: "gvFront", infoKey: "gvFrontP", specKey: "gvFrontS",
+      id: "front", mode: "ext", labelKey: "gvFront", infoKey: "gvFrontP", specKey: "gvFrontS",
       pose: { x: 0, y: -0.6, ry: faceRy, rx: -0.05, dist: 6.2, tx: 0, ty: -0.15, tz: a.frontZ * 0.5, co: 0.55, fov: 34, light: 0 },
     },
     {
-      id: "side", labelKey: "gvSide", infoKey: "gvSideP", specKey: "gvSideS",
+      id: "side", mode: "ext", labelKey: "gvSide", infoKey: "gvSideP", specKey: "gvSideS",
       pose: { x: 0, y: -0.55, ry: Math.PI / 2, rx: -0.02, dist: 9.4, tx: 0, ty: -0.15, tz: 0, co: 0.28, fov: 30, light: 0 },
     },
     {
-      id: "rear", labelKey: "gvRear", infoKey: "gvRearP", specKey: "gvRearS",
+      id: "rear", mode: "ext", labelKey: "gvRear", infoKey: "gvRearP", specKey: "gvRearS",
       pose: { x: 0, y: -0.6, ry: tailRy, rx: -0.05, dist: 6.4, tx: 0, ty: -0.15, tz: a.rearZ * 0.5, co: 0.55, fov: 34, light: 0 },
     },
     {
-      id: "interior", labelKey: "gvInterior", infoKey: "gvInteriorP", specKey: "gvInteriorS",
-      interior: true,
+      id: "wheel", mode: "ext", labelKey: "gvWheel", infoKey: "gvWheelP", specKey: "gvWheelS",
+      pose: { x: 0, y: -0.7, ry: wheelRy, rx: -0.1, dist: 2.6, tx: a.wheelX * 0.9, ty: a.wheelY, tz: a.frontWheelZ, co: 0.25, fov: 40, light: 0 },
+    },
+    {
+      id: "top", mode: "ext", labelKey: "gvTop", infoKey: "gvTopP", specKey: "gvTopS",
+      pose: { x: 0, y: -0.3, ry: -0.7, rx: -1.15, dist: 7.6, tx: 0, ty: -0.35, tz: 0, co: 0.1, fov: 36, light: 0 },
+    },
+    {
+      id: "interior", mode: "int", labelKey: "gvInterior", infoKey: "gvInteriorP", specKey: "gvInteriorS",
       // driver POV: eye just ahead of the seat backrest (raycast-verified clear),
       // looking at the cluster/wheel with the lit dash beyond
       pose: { x: -0.3, y: a.cabinY, ry: cabinRy, rx: 0.03, dist: 0.05, tx: -0.05, ty: a.dashY + 0.1, tz: a.dashZ, co: 0.32, fov: 62, light: 1.6 },
     },
     {
-      id: "wheel", labelKey: "gvWheel", infoKey: "gvWheelP", specKey: "gvWheelS",
-      pose: { x: 0, y: -0.7, ry: wheelRy, rx: -0.1, dist: 2.6, tx: a.wheelX * 0.9, ty: a.wheelY, tz: a.frontWheelZ, co: 0.25, fov: 40, light: 0 },
-    },
-    {
-      id: "top", labelKey: "gvTop", infoKey: "gvTopP", specKey: "gvTopS",
-      pose: { x: 0, y: -0.3, ry: -0.7, rx: -1.15, dist: 7.6, tx: 0, ty: -0.35, tz: 0, co: 0.1, fov: 36, light: 0 },
+      id: "cabin", mode: "int", labelKey: "gvCabin", infoKey: "gvCabinP", specKey: "gvCabinS",
+      // rear bench POV: seated behind the driver at the measured seat line,
+      // looking forward past the console toward the dash
+      pose: { x: -0.28, y: a.cabinY - 0.06, ry: cabinRy, rx: 0.05, dist: 0.55, tx: -0.05, ty: a.dashY + 0.12, tz: a.dashZ, co: 0.3, fov: 66, light: 1.7 },
     },
   ];
 }
 
 let views = [];
 let activeId = null;
+let mode = "ext";       // "ext" | "int" — which side of the glass we preview
 let rotating = false;
 let degTimer = null;
 
@@ -60,7 +68,8 @@ export function renderGallery() {
   const box = $("#galViews");
   if (!box) return;
   views = buildViews();
-  box.innerHTML = views
+  const shown = views.filter((v) => v.mode === mode);
+  box.innerHTML = shown
     .map((v) => `
       <button class="gal-view${v.id === activeId ? " on" : ""}" data-gview="${esc(v.id)}" role="radio" aria-checked="${v.id === activeId}">
         <i>${viewIcon(v.id)}</i><span>${esc(t(v.labelKey))}</span>
@@ -75,6 +84,7 @@ function viewIcon(id) {
     side: '<path d="M3 15h18M4.5 15l1.8-5.4A2 2 0 0 1 8.2 8.2h7.6a2 2 0 0 1 1.9 1.4L19.5 15"/><circle cx="7.5" cy="16.5" r="1.6"/><circle cx="16.5" cy="16.5" r="1.6"/>',
     rear: '<path d="M4 12h16M6 12V8.5A1.5 1.5 0 0 1 7.5 7h9A1.5 1.5 0 0 1 18 8.5V12M7 16h2m6 0h2"/>',
     interior: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="2.4"/><path d="M12 3.5v6m-7 3h5.6m8.8 0H18"/>',
+    cabin: '<path d="M7 20v-4a3 3 0 0 1 3-3h4a3 3 0 0 1 3 3v4M7 13V7a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v6"/><path d="M5 20h14"/>',
     wheel: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3"/><path d="M12 3.5V9m0 6v5.5M4.4 12h5.2m8.8 0h-5.2"/>',
     top: '<rect x="4.5" y="4.5" width="15" height="15" rx="3"/><path d="M4.5 10h15M10 4.5v15"/>',
   }[id] || '<circle cx="12" cy="12" r="8"/>';
@@ -86,7 +96,7 @@ function renderInfo() {
   if (!box) return;
   const v = views.find((x) => x.id === activeId);
   if (!v) {
-    box.innerHTML = `<p class="gal-idle">${esc(t("galIdle"))}</p>`;
+    box.innerHTML = `<p class="gal-idle">${esc(t(mode === "int" ? "galIdleIn" : "galIdle"))}</p>`;
     return;
   }
   box.innerHTML = `
@@ -95,12 +105,38 @@ function renderInfo() {
     <span class="gal-spec">${esc(t(v.specKey))}</span>`;
 }
 
+/* ---------- mode switch (EXTERIOR / INTERIOR) ---------- */
+
+function setMode(next) {
+  const m = next === "int" ? "int" : "ext";
+  if (m === mode) return;
+  mode = m;
+  const sec = $("#gallery");
+  if (sec) sec.classList.toggle("interior", mode === "int");
+  document.querySelectorAll("[data-gmode]").forEach((b) => {
+    const on = b.getAttribute("data-gmode") === mode;
+    b.classList.toggle("on", on);
+    b.setAttribute("aria-checked", String(on));
+  });
+  // the turntable lives outside the glass — stop it when we step in
+  if (mode === "int" && rotating) setRotating(false);
+  const v = views.find((x) => x.id === activeId);
+  if (!v || v.mode !== mode) {
+    activeId = null;
+    setPoseOverride(null);
+    view.lightT = 0;
+  }
+  renderGallery();
+  track("gallery_mode", mode);
+}
+
 /* ---------- view selection ---------- */
 
 export function selectView(id, { silent } = {}) {
   const v = views.find((x) => x.id === id);
   if (!v || !G.ready) return;
   activeId = id;
+  if (v.mode !== mode) setMode(v.mode);
   setRotating(false);
   setPoseOverride({ ...v.pose });
   // cabin light rides the pose channel (advance() applies view.light → interiorLight)
@@ -117,16 +153,17 @@ export function clearView() {
 }
 
 function stepView(delta) {
-  if (!views.length) return;
-  const i = views.findIndex((x) => x.id === activeId);
-  const next = views[(i + delta + views.length) % views.length];
+  const shown = views.filter((v) => v.mode === mode);
+  if (!shown.length) return;
+  const i = shown.findIndex((x) => x.id === activeId);
+  const next = shown[(i + delta + shown.length) % shown.length];
   selectView(next.id);
 }
 
-/* ---------- 360° turntable ---------- */
+/* ---------- 360° turntable (exterior only) ---------- */
 
 function setRotating(on) {
-  rotating = !!on;
+  rotating = !!on && mode === "ext";
   view.autoRotate = rotating && !G.reduce;
   const st = $("#galRotState");
   if (st) st.textContent = rotating ? "●" : "";
@@ -151,6 +188,8 @@ function updateDial() {
 
 export function bindGallery() {
   document.addEventListener("click", (e) => {
+    const mb = e.target.closest && e.target.closest("[data-gmode]");
+    if (mb) { setMode(mb.getAttribute("data-gmode")); return; }
     const vb = e.target.closest && e.target.closest("[data-gview]");
     if (vb) { selectView(vb.getAttribute("data-gview")); return; }
     const act = e.target.closest && e.target.closest("[data-gact]");

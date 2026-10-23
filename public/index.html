@@ -7,7 +7,7 @@
 <title>CARX ATELIER — BMW M5 E34 Studio</title>
 <meta name="description" content="CARX ATELIER — interactive 3D studio for the BMW M5 E34. Configure paint, wheels, roof and trim on a real GLB model, share your build and save it to your garage.">
 <meta name="robots" content="index,follow">
-<meta name="theme-color" content="#060809">
+<meta name="theme-color" content="#04060c">
 <link rel="canonical" href="/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="CARX ATELIER">
@@ -16,8 +16,11 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="CARX ATELIER — BMW M5 E34 Studio">
 <meta name="color-scheme" content="dark light">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b0d10'/%3E%3Cpath d='M20 22h22l6 8v12h-4a6 6 0 1 1-12 0h-8a6 6 0 1 1-12 0h-4V30z' fill='none' stroke='%23d4a853' stroke-width='3'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2304060c'/%3E%3Cpath d='M20 22h22l6 8v12h-4a6 6 0 1 1-12 0h-8a6 6 0 1 1-12 0h-4V30z' fill='none' stroke='%23d9b168' stroke-width='3'/%3E%3C/svg%3E">
 <link rel="manifest" href="/manifest.webmanifest">
+<link rel="preload" href="/fonts/sora-800-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/manrope-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/fonts/fonts.css">
 <link rel="stylesheet" href="/css/studio.css">
 <link rel="stylesheet" href="/css/features.css">
 <script type="application/ld+json">
@@ -185,9 +188,14 @@
           <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="27"/><g id="galNeedle"><path d="M32 7 L34.6 12 L29.4 12 Z" fill="var(--accent)"/></g><circle cx="32" cy="32" r="2.2" fill="var(--accent)"/></svg>
           <span id="galDeg">0°</span>
         </div>
-        <p class="hint" data-ix="galHint">drag on the canvas &middot; 360° turntable</p>
+        <p class="hint hint-ext" data-ix="galHint">drag on the canvas &middot; 360° turntable</p>
+        <p class="hint hint-int" data-ix="galHintIn">drag on the canvas &middot; look around the cabin</p>
       </div>
       <div class="gal-panel rv rv-d1">
+        <div class="gal-modes" role="radiogroup" aria-label="Preview mode">
+          <button class="gal-mode on" data-gmode="ext" role="radio" aria-checked="true"><svg viewBox="0 0 24 24"><path d="M3 15h18M4.5 15l1.8-5.4A2 2 0 0 1 8.2 8.2h7.6a2 2 0 0 1 1.9 1.4L19.5 15"/><circle cx="7.5" cy="16.5" r="1.6"/><circle cx="16.5" cy="16.5" r="1.6"/></svg><span data-ix="galModeExt">Exterior</span></button>
+          <button class="gal-mode" data-gmode="int" role="radio" aria-checked="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="2.4"/><path d="M12 3.5v6m-7 3h5.6m8.8 0H18"/></svg><span data-ix="galModeInt">Interior</span></button>
+        </div>
         <div class="gal-views" id="galViews" role="radiogroup"></div>
         <div class="gal-info" id="galInfo"></div>
         <div class="gal-ctrl">

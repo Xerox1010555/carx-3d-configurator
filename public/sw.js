@@ -1,12 +1,13 @@
 /* CARX ATELIER — service worker: offline-first shell, cache-first immutable assets. */
 
-const VERSION = "carx-v3";
+const VERSION = "carx-v4";
 const SHELL_CACHE = VERSION + "-shell";
 const ASSET_CACHE = VERSION + "-assets";
 const API_CACHE = VERSION + "-api";
 
 const SHELL = [
   "/",
+  "/fonts/fonts.css",
   "/css/studio.css",
   "/css/features.css",
   "/js/main.js",

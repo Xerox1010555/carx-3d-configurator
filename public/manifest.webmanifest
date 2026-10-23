@@ -4,8 +4,8 @@
   "description": "Interactive 3D configurator studio for the BMW M5 E34.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#060809",
-  "theme_color": "#060809",
+  "background_color": "#04060c",
+  "theme_color": "#04060c",
   "icons": [
     {
       "src": "/icon.svg",

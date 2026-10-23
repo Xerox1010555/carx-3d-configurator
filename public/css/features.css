@@ -1,4 +1,5 @@
-/* ============ CARX ATELIER — feature styles (garage, screenshot, kiosk, admin, misc) ============ */
+/* ============ CARX ATELIER — features.css (v2.2 "VIP glass")
+   gallery preview modes, garage, screenshot, kiosk, admin, misc ============ */
 
 /* RTL support: logical properties handle most of it; explicit fixes here */
 [dir="rtl"] .hero-hint { right: auto; left: clamp(24px, 5vw, 66px) }
@@ -10,8 +11,9 @@
 /* garage modal table */
 .g-table { display: flex; flex-direction: column; gap: 10px; margin: 12px 0 6px }
 .g-row { display: grid; grid-template-columns: 34px 1fr auto; gap: 12px; align-items: center;
-  border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px }
-.g-swatch { width: 34px; height: 34px; border-radius: 9px; border: 1px solid var(--line2) }
+  border-radius: 14px; padding: 10px 12px }
+.g-swatch { width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--line2);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.12) }
 .g-meta b { display: block; font-size: 13.5px }
 .g-meta span { font: 500 11px/1.5 var(--mono); color: var(--muted) }
 .g-acts { display: flex; gap: 6px }
@@ -22,12 +24,12 @@
 
 /* order lookup in checkout success */
 .order-lookup { display: flex; gap: 8px; margin-top: 10px }
-.order-lookup input { flex: 1; border: 1px solid var(--line); background: var(--card2); color: var(--fg);
+.order-lookup input { flex: 1; border: 1px solid var(--line2); background: var(--glass); color: var(--fg);
   border-radius: 10px; padding: 10px 12px; font: 600 12px/1 var(--mono); letter-spacing: .08em }
 
 /* whatsapp / lead CTA inside configurator panel */
 .lead-cta { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap }
-.lead-cta input { flex: 1; min-width: 140px; border: 1px solid var(--line); background: var(--card2);
+.lead-cta input { flex: 1; min-width: 140px; border: 1px solid var(--line2); background: var(--glass);
   color: var(--fg); border-radius: 10px; padding: 10px 12px; font-size: 13px }
 
 /* option badges */
@@ -39,7 +41,6 @@
 @media (max-width: 720px) {
   .nav-act { gap: 6px }
   .nav-act .icobtn, .cur-sel { height: 34px; width: 34px; padding: 0 6px }
-  .nav-act .lang-b { width: auto }
   #langSel { width: 54px }
   #curSel { width: 62px }
 }
@@ -58,77 +59,102 @@ body.kiosk .kiosk-exit { display: block }
 @keyframes flashfade { from { opacity: .85 } to { opacity: 0 } }
 
 /* offline banner */
-.offline-banner { position: fixed; top: calc(var(--nav-h) + 8px); left: 50%; transform: translateX(-50%);
-  z-index: 96; background: var(--card); border: 1px solid var(--warn); color: var(--fg2);
-  border-radius: 999px; padding: 8px 18px; font: 600 11px/1 var(--mono); letter-spacing: .12em }
+.offline-banner { position: fixed; top: calc(var(--nav-h) + 22px); left: 50%; transform: translateX(-50%);
+  z-index: 96; border-radius: 999px; padding: 8px 18px; font: 600 11px/1 var(--mono); letter-spacing: .12em }
 
-/* ---------- showroom gallery ---------- */
+/* ---------- showroom gallery / live preview ---------- */
 .gallery .gal { display: grid; grid-template-columns: 1.5fr 1fr; gap: 22px; align-items: stretch }
-.gal-stage { position: relative; min-height: 320px; border-radius: var(--r); border: 1px solid var(--line);
-  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--card) 40%, transparent)); }
+.gal-stage { position: relative; min-height: 420px; border-radius: var(--r2); border: 1px solid var(--line);
+  background:linear-gradient(180deg,transparent,color-mix(in srgb, var(--glass) 40%, transparent));
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  transition:min-height .4s ease }
+.gallery.interior .gal-stage { min-height: 480px }
 .gal-stage .hint { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
   font: 500 10px/1 var(--mono); letter-spacing: .22em; text-transform: uppercase; color: var(--dim);
-  white-space: nowrap }
+  white-space: nowrap; padding: 9px 16px; border-radius: 999px;
+  background: var(--glass); border: 1px solid var(--line); backdrop-filter: blur(12px) }
 [dir="rtl"] .gal-stage .hint { left: 50%; right: auto }
+.gal-stage .hint-int { display: none }
+.gallery.interior .gal-stage .hint-ext { display: none }
+.gallery.interior .gal-stage .hint-int { display: block }
+
+/* 360° dial */
 .gal-dial { position: absolute; top: 14px; inset-inline-end: 14px; display: flex; align-items: center;
-  gap: 8px; background: var(--card); border: 1px solid var(--line); border-radius: 999px;
-  padding: 6px 12px 6px 8px }
+  gap: 8px; border-radius: 999px; padding: 6px 12px 6px 8px }
 .gal-dial svg { width: 26px; height: 26px }
 .gal-dial svg circle:first-child { fill: none; stroke: var(--line2); stroke-width: 2 }
 .gal-dial svg g { transform-origin: 32px 32px; transition: transform .12s linear }
 .gal-dial span { font: 700 12px/1 var(--mono); color: var(--fg2); min-width: 38px; text-align: end }
-.gal-panel { display: flex; flex-direction: column; gap: 14px; background: var(--card);
-  border: 1px solid var(--line); border-radius: var(--r); padding: 20px }
+
+/* side panel */
+.gal-panel { display: flex; flex-direction: column; gap: 14px; border-radius: var(--r2); padding: 20px }
+
+/* EXTERIOR / INTERIOR segmented preview switch */
+.gal-modes { display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:5px;border-radius:16px;
+  background:color-mix(in srgb,var(--bg) 45%,transparent);border:1px solid var(--line) }
+.gal-mode { appearance:none;border:1px solid transparent;background:transparent;border-radius:12px;
+  padding:11px 10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+  font:700 11.5px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--muted);
+  transition:color .2s,background .25s,border-color .25s,box-shadow .25s }
+.gal-mode svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.gal-mode:hover{color:var(--fg2)}
+.gal-mode.on{color:var(--accent-ink);background:var(--gold);border-color:transparent;box-shadow:0 6px 20px rgba(217,177,104,.3)}
+[dir="rtl"] .gal-mode{letter-spacing:.06em}
+
+/* view chips grid (filtered by mode) */
 .gal-views { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px }
-.gal-view { appearance: none; border: 1px solid var(--line); background: var(--card2); color: var(--fg2);
-  border-radius: 12px; padding: 12px 8px; cursor: pointer; display: flex; flex-direction: column;
-  align-items: center; gap: 7px; font: 600 11px/1 var(--mono); letter-spacing: .06em;
+.gal-view { appearance: none; border-radius: 13px; padding: 12px 8px; cursor: pointer; color: var(--fg2);
+  display: flex; flex-direction: column; align-items: center; gap: 7px; font: 600 11px/1.3 var(--mono); letter-spacing: .06em;
   transition: border-color .2s, color .2s, transform .2s, box-shadow .25s }
 .gal-view i { display: grid; place-items: center; width: 24px; height: 24px }
-.gal-view svg { width: 22px; height: 22px }
+.gal-view svg { width: 22px; height: 22px; fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round }
 .gal-view:hover { transform: translateY(-2px); border-color: var(--accent); color: var(--fg) }
-.gal-view.on { border-color: var(--accent); color: var(--accent); box-shadow: var(--glow) }
-.gal-info { min-height: 96px; border-top: 1px solid var(--line); padding-top: 14px }
-.gal-info h4 { margin: 0 0 6px; font-size: 16px; letter-spacing: .01em }
+.gal-view.on { border-color: var(--accent); color: var(--accent); box-shadow: var(--glow); background: var(--accent-soft) }
+[dir="rtl"] .gal-view{letter-spacing:0}
+
+.gal-info { min-height: 108px; border-top: 1px solid var(--line); padding-top: 14px }
+.gal-info h4 { margin: 0 0 6px; font: 800 17px/1.25 var(--display); letter-spacing: .01em }
 .gal-info p { margin: 0; font-size: 13.5px; line-height: 1.65; color: var(--muted) }
 .gal-idle { font: 500 12px/1.6 var(--mono); color: var(--dim) }
 .gal-spec { display: inline-block; margin-top: 10px; font: 600 10px/1 var(--mono); letter-spacing: .18em;
-  text-transform: uppercase; color: var(--accent); border: 1px solid var(--line2);
-  border-radius: 999px; padding: 6px 12px }
+  text-transform: uppercase; color: var(--accent); border: 1px solid color-mix(in srgb,var(--accent) 32%,transparent);
+  background: var(--accent-soft); border-radius: 999px; padding: 6px 12px }
 .gal-ctrl { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto }
 .gal-ctrl .btn { padding: 11px 18px; font-size: 13px }
-.gal-ctrl #gal360.on { background: var(--accent); color: var(--accent-ink) }
+.gal-ctrl #gal360.on { background: var(--gold); color: var(--accent-ink); border-color: transparent }
 .gal-ctrl #galRotState { font-style: normal; margin-inline-start: 4px }
+.gallery.interior .gal-dial { opacity:.35 }
+.gallery.interior .gal-ctrl [data-gact="360"] { display:none }
 @media (max-width: 980px) {
   .gallery .gal { grid-template-columns: 1fr }
-  .gal-stage { min-height: 250px }
+  .gal-stage { min-height: 300px }
+  .gallery.interior .gal-stage { min-height: 340px }
 }
 
 /* ---------- admin console ---------- */
 .admin-wrap { max-width: 1080px; margin: 0 auto; padding: 40px clamp(16px, 4vw, 40px) 90px }
-.admin-wrap h1 { font-size: clamp(26px, 4vw, 40px); margin: 0 0 6px; letter-spacing: -.01em }
+.admin-wrap h1 { font: 800 clamp(26px, 4vw, 40px)/1.15 var(--display); margin: 0 0 6px; letter-spacing: -.01em }
 .admin-wrap .sub { color: var(--muted); margin: 0 0 26px; font-size: 14px }
-.admin-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r);
-  padding: 22px; margin-bottom: 18px }
-.admin-card h3 { margin: 0 0 14px; font-size: 15px; letter-spacing: .06em; text-transform: uppercase;
-  color: var(--fg2); font-family: var(--mono) }
+.admin-card { border-radius: var(--r2); padding: 22px; margin-bottom: 18px }
+.admin-card h3 { margin: 0 0 14px; font: 600 13px/1 var(--display); letter-spacing: .14em; text-transform: uppercase;
+  color: var(--fg2) }
 .admin-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px }
-.admin-stat { background: var(--card2); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px }
-.admin-stat b { display: block; font: 700 22px/1.2 var(--mono) }
+.admin-stat { border-radius: 14px; padding: 14px 16px }
+.admin-stat b { display: block; font: 700 22px/1.2 var(--display) }
 .admin-stat span { font: 500 10px/1 var(--mono); letter-spacing: .22em; text-transform: uppercase; color: var(--dim) }
 .admin-table { width: 100%; border-collapse: collapse; font-size: 13px }
 .admin-table th { text-align: start; font: 600 10px/1 var(--mono); letter-spacing: .18em;
   text-transform: uppercase; color: var(--dim); padding: 8px 10px; border-bottom: 1px solid var(--line2) }
 .admin-table td { padding: 9px 10px; border-bottom: 1px solid var(--line) }
-.admin-table tr:hover td { background: var(--card2) }
+.admin-table tr:hover td { background: var(--accent-soft) }
 .admin-form { display: flex; gap: 10px; flex-wrap: wrap; align-items: end }
 .admin-form label { display: flex; flex-direction: column; gap: 6px; font: 600 10px/1 var(--mono);
   letter-spacing: .16em; text-transform: uppercase; color: var(--dim) }
-.admin-form input, .admin-form select { border: 1px solid var(--line); background: var(--card2);
+.admin-form input, .admin-form select { border: 1px solid var(--line2); background: var(--glass);
   color: var(--fg); border-radius: 10px; padding: 10px 12px; font-size: 13.5px; min-width: 160px }
 .badge-status { display: inline-block; padding: 3px 10px; border-radius: 999px; font: 600 10px/1.5 var(--mono);
   letter-spacing: .1em; border: 1px solid var(--line2) }
 .badge-status.demo { color: var(--warn) } .badge-status.paid { color: var(--ok) }
 .badge-status.fulfilled { color: var(--accent) } .badge-status.cancelled { color: var(--err) }
-.price-edit { width: 90px; border: 1px solid var(--line); background: var(--card2); color: var(--fg);
+.price-edit { width: 90px; border: 1px solid var(--line2); background: var(--glass); color: var(--fg);
   border-radius: 8px; padding: 6px 8px; font: 600 12px var(--mono) }

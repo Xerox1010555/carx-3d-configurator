@@ -123,7 +123,7 @@ shopRouter.delete("/newsletter/:token", asyncRoute((req, res) => {
 }));
 
 /* POST /api/events — privacy-light analytics (choice heatmap). No IPs, no fingerprints. */
-const VALID_EVENTS = new Set(["select_paint", "select_wheel", "select_roof", "select_trim", "add_cart", "share", "screenshot", "garage_save", "client_error"]);
+const VALID_EVENTS = new Set(["select_paint", "select_wheel", "select_roof", "select_trim", "add_cart", "share", "screenshot", "garage_save", "client_error", "gallery_view", "gallery_mode"]);
 shopRouter.post("/events", limitWrite, asyncRoute((req, res) => {
   const b = req.body || {};
   if (!VALID_EVENTS.has(b.kind)) return res.status(422).json({ error: "invalid_kind" });

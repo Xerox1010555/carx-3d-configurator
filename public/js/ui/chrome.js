@@ -14,7 +14,7 @@ export function applyThemeGlobal(th) {
   savePrefs();
   if (G.ready) applyThemeToScene(state.prefs.theme);
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute("content", state.prefs.theme === "light" ? "#f5f3f0" : "#060809");
+  if (meta) meta.setAttribute("content", state.prefs.theme === "light" ? "#e9edf4" : "#04060c");
 }
 
 /* ---------- custom cursor ---------- */

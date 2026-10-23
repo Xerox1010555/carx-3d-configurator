@@ -18,7 +18,7 @@ export async function exportScreenshot() {
     cv.width = src.width * scale;
     cv.height = src.height * scale;
     const cx = cv.getContext("2d");
-    cx.fillStyle = state.prefs.theme === "light" ? "#f5f3f0" : "#060809";
+    cx.fillStyle = state.prefs.theme === "light" ? "#e9edf4" : "#04060c";
     cx.fillRect(0, 0, cv.width, cv.height);
     cx.drawImage(src, 0, 0, cv.width, cv.height);
 

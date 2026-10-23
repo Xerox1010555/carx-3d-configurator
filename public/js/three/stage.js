@@ -51,7 +51,7 @@ export function initStage(canvas) {
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x060809);
+    scene.background = new THREE.Color(0x04060c);
     const cam = new THREE.PerspectiveCamera(34, 1, 0.02, 160);
     cam.position.set(0, 0.5, 8.6);
 
@@ -201,7 +201,7 @@ export function applyThemeToScene(theme) {
   applyShowroomTheme(theme);
   if (G.dust) G.dust.material.opacity = dark ? 0.4 : 0.14;
   G.renderer.toneMappingExposure = dark ? 1.28 : 1.05;
-  G.scene.background = new THREE.Color(dark ? 0x060809 : 0xf1efec);
+  G.scene.background = new THREE.Color(dark ? 0x04060c : 0xe9edf4);
 }
 
 /** Current turntable angle in degrees (0–360). */
