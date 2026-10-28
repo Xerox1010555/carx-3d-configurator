@@ -7,7 +7,20 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = path.join(__dirname, "..", "data");
+
+function resolveDataDir() {
+  if (process.env.CARX_DATA_DIR) return process.env.CARX_DATA_DIR;
+  const local = path.join(__dirname, "..", "data");
+  try {
+    mkdirSync(local, { recursive: true });
+    return local;
+  } catch {
+    // Read-only filesystem (e.g. Vercel serverless) → fall back to /tmp
+    return "/tmp/carx-data";
+  }
+}
+
+const DATA_DIR = resolveDataDir();
 mkdirSync(DATA_DIR, { recursive: true });
 
 const db = new DatabaseSync(path.join(DATA_DIR, "carx.db"));

@@ -91,6 +91,11 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "server_error" });
 });
 
-app.listen(PORT, () => {
-  console.log(`CARX ATELIER → http://localhost:${PORT}  (admin: /admin)`);
-});
+/* ---- serverless aware ---- */
+export default app;
+
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`CARX ATELIER → http://localhost:${PORT}  (admin: /admin)`);
+  });
+}
