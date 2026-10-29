@@ -3,7 +3,13 @@
  */
 import { scryptSync, randomBytes, timingSafeEqual, createHmac } from "node:crypto";
 
-const SECRET = process.env.CARX_JWT_SECRET || "carx-dev-secret-change-in-production";
+/* Fail closed: never fall back to a publicly known secret in production. */
+const isProd = Boolean(process.env.VERCEL) || process.env.NODE_ENV === "production";
+let SECRET = process.env.CARX_JWT_SECRET || "";
+if (!SECRET) {
+  if (isProd) throw new Error("CARX_JWT_SECRET is required in production — refusing insecure default.");
+  SECRET = "carx-dev-secret-change-in-development";
+}
 const b64u = (buf) => Buffer.from(buf).toString("base64url");
 const fromB64u = (s) => Buffer.from(s, "base64url").toString("utf8");
 

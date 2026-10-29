@@ -65,7 +65,11 @@ for (const s of SHOWROOMS) {
 }
 
 const adminEmail = process.env.CARX_ADMIN_EMAIL || "admin@carx.local";
-const adminPw = process.env.CARX_ADMIN_PASSWORD || "carx-admin-2026";
+let adminPw = process.env.CARX_ADMIN_PASSWORD || "";
+if (!adminPw) {
+  if (process.env.VERCEL) throw new Error("CARX_ADMIN_PASSWORD is required on Vercel — refusing the public default.");
+  adminPw = "carx-admin-2026"; /* local dev only */
+}
 if (!q.get("SELECT id FROM admin_users WHERE email = ?", adminEmail)) {
   q.run(
     "INSERT INTO admin_users (id, email, password_hash, role, created_at) VALUES (?,?,?,?,?)",
